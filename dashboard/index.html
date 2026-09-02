@@ -553,12 +553,36 @@
 
             <!-- SEÇÃO DE TRADES SIMULADOS AO VIVO (PAPER TRADING 24/7) -->
     <div style="margin-top: 30px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
             <div>
                 <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0;">🧪 Extrato de Trades Simulados ao Vivo em Tempo Real (Paper Trading 24/7)</h3>
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Monitoramento contínuo em nuvem sem risco. Ordens gravadas automaticamente quando os 5 Filtros autorizam.</p>
             </div>
-            <span style="background: rgba(139, 92, 246, 0.15); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">NUVEM ATIVA 24/7</span>
+            <span id="paper-status-badge" style="background: rgba(139, 92, 246, 0.15); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">🟢 MONITORAMENTO 24/7 ATIVO</span>
+        </div>
+
+        <!-- CARDS DE METRICAS DO PAPER TRADING -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">TAXA DE ASSERTIVIDADE</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-green);" id="paper-winrate">75.0%</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);" id="paper-wins-losses">3 Vitórias / 1 Loss</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">FATOR DE LUCRO (PROFIT FACTOR)</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-blue);" id="paper-pf">2.59x</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);">Expectativa Positiva</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">TOTAL DE TRADES SIMULADOS</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: #fff;" id="paper-total-trades">5</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);" id="paper-open-count">1 Em Andamento</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">LUCRO SIMULADO LÍQUIDO</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-green);" id="paper-pnl-usd">+$61.92</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);">Sem Risco de Capital</div>
+            </div>
         </div>
 
         <div style="overflow-x: auto;">
@@ -566,32 +590,18 @@
                 <thead>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px;">
                         <th style="padding: 10px 14px;"># ID</th>
+                        <th style="padding: 10px 14px;">Ativo</th>
                         <th style="padding: 10px 14px;">Data/Hora Entrada</th>
                         <th style="padding: 10px 14px;">Data/Hora Saída</th>
                         <th style="padding: 10px 14px;">Preço Entrada</th>
-                        <th style="padding: 10px 14px;">Preço Saída</th>
+                        <th style="padding: 10px 14px;">Preço Atual / Saída</th>
                         <th style="padding: 10px 14px;">Tipo / Status</th>
                         <th style="padding: 10px 14px; text-align: right;">Resultado Live</th>
                     </tr>
                 </thead>
                 <tbody id="paper-trades-table-body">
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                        <td style="padding: 10px 14px; font-weight: 700;">#102</td>
-                        <td style="padding: 10px 14px;">2026-09-02 04:00:00</td>
-                        <td style="padding: 10px 14px; color: var(--accent-blue); font-weight: 700;">EM ANDAMENTO</td>
-                        <td style="padding: 10px 14px;">$64,890.00</td>
-                        <td style="padding: 10px 14px;">$65,120.00</td>
-                        <td style="padding: 10px 14px; color: var(--accent-green); font-weight: 700;">🟢 COMPRA EM TENDÊNCIA (LIVE)</td>
-                        <td style="padding: 10px 14px; text-align: right; font-weight: 700; color: #10b981;">+0.35% (+$3.50)</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                        <td style="padding: 10px 14px; font-weight: 700;">#101</td>
-                        <td style="padding: 10px 14px;">2026-09-02 01:15:00</td>
-                        <td style="padding: 10px 14px;">2026-09-02 03:40:00</td>
-                        <td style="padding: 10px 14px;">$63,450.00</td>
-                        <td style="padding: 10px 14px;">$64,890.00</td>
-                        <td style="padding: 10px 14px;">🎯 TAKE PROFIT</td>
-                        <td style="padding: 10px 14px; text-align: right; font-weight: 700; color: #10b981;">+2.27% (+$22.70)</td>
+                    <tr>
+                        <td colspan="8" style="padding: 16px; text-align: center; color: var(--text-muted);">Carregando extrato em tempo real...</td>
                     </tr>
                 </tbody>
             </table>
@@ -734,13 +744,32 @@
             } catch (err) {}
         }
 
-        // Busca Tabela de Trades Simulados ao Vivo (Paper Trading)
+        // Busca Tabela e Métricas de Trades Simulados ao Vivo (Paper Trading)
         async function fetchPaperTrades() {
             try {
                 const res = await fetch(`${API_URL}/paper-trades`);
-                const trades = await res.json();
+                const payload = await res.json();
+                
+                const trades = Array.isArray(payload) ? payload : (payload.trades || []);
+                const metrics = payload.metrics || null;
+                
+                if (metrics) {
+                    document.getElementById('paper-winrate').innerText = `${metrics.win_rate_pct.toFixed(1)}%`;
+                    document.getElementById('paper-wins-losses').innerText = `${metrics.wins} Vitórias / ${metrics.losses} Loss`;
+                    document.getElementById('paper-pf').innerText = `${metrics.profit_factor.toFixed(2)}x`;
+                    document.getElementById('paper-total-trades').innerText = `${metrics.total_trades}`;
+                    document.getElementById('paper-open-count').innerText = `${metrics.open_trades} Em Andamento`;
+                    document.getElementById('paper-pnl-usd').innerText = `${metrics.total_pnl_usd >= 0 ? '+' : ''}$${metrics.total_pnl_usd.toFixed(2)}`;
+                    if (metrics.status_label) {
+                        document.getElementById('paper-status-badge').innerText = metrics.status_label;
+                    }
+                }
+
                 const tbody = document.getElementById('paper-trades-table-body');
-                if (!trades || trades.length === 0) return;
+                if (!trades || trades.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="padding: 16px; text-align: center; color: var(--text-muted);">Nenhum trade simulado no momento.</td></tr>';
+                    return;
+                }
 
                 tbody.innerHTML = '';
                 trades.forEach(t => {
@@ -748,9 +777,11 @@
                     tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
                     const color = t.pnl_pct >= 0 ? '#10b981' : '#ef4444';
                     const exitTimeLabel = t.exit_time === 'EM ANDAMENTO' ? `<span style="color: var(--accent-blue); font-weight: 700;">EM ANDAMENTO</span>` : t.exit_time;
+                    const symbolLabel = t.symbol || 'BTC-USD';
 
                     tr.innerHTML = `
                         <td style="padding: 10px 14px; font-weight: 700;">#${t.id}</td>
+                        <td style="padding: 10px 14px; font-weight: 600; color: var(--text-primary);">${symbolLabel}</td>
                         <td style="padding: 10px 14px;">${t.entry_time}</td>
                         <td style="padding: 10px 14px;">${exitTimeLabel}</td>
                         <td style="padding: 10px 14px;">$${t.entry_price.toLocaleString()}</td>

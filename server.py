@@ -6,6 +6,13 @@ import json
 import os
 import sys
 
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from src.notifier import notifier
 from src.config import INITIAL_CAPITAL
@@ -176,12 +183,18 @@ class APIHandler(BaseHTTPRequestHandler):
         else:
             self._respond_json({"error": "Rota não encontrada"}, status=404)
 
+from src.paper_trading import paper_trading_engine, get_live_paper_trades
+
 def run_server(port=None):
     if port is None:
         port = int(os.getenv("PORT", 5000))
+    
+    # Inicia o motor de simulação 24/7 em tempo real em segundo plano
+    paper_trading_engine.start_background_loop(interval_seconds=30)
+    
     server_address = ('', port)
     httpd = HTTPServer(server_address, APIHandler)
-    print(f"[API Server] Servidor Cloud-Ready 24/7 rodando na porta {port}...")
+    print(f"[API Server] Servidor Cloud-Ready 24/7 & Paper Trading Engine rodando na porta {port}...")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
