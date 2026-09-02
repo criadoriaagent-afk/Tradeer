@@ -567,7 +567,10 @@
     <script>
         lucide.createIcons();
 
-        const API_URL = 'http://localhost:5000/api';
+        // URL da API REST (Seleção automática entre Localhost e Servidor em Nuvem 24/7 Render)
+        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
+            ? (window.location.protocol === 'file:' ? 'http://localhost:5000/api' : `${window.location.origin}/api`)
+            : 'https://tradeer-bot.onrender.com/api';
         let chartInstance = null;
 
         // Inicializa o Gráfico Chart.js
