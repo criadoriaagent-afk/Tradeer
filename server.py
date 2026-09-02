@@ -134,6 +134,10 @@ class APIHandler(BaseHTTPRequestHandler):
             }
             self._respond_json(response_data)
             
+        elif self.path == '/api/paper-trades':
+            from src.paper_trading import get_live_paper_trades
+            self._respond_json(get_live_paper_trades())
+
         elif self.path == '/api/trades':
             audit = get_audited_trade_history(symbol="BTC-USD", days=730)
             self._respond_json(audit.get('trades', []))
