@@ -165,35 +165,42 @@ class PaperTradingEngine:
                         sl = trade["stop_loss"]
                         tp = trade["take_profit"]
                         
-                        # Atualizar cotação e PnL dinâmico em andamento
+                        # Dedução conservadora de 0.10% para taxas Bybit + Slippage
+                        fee_slippage_pct = 0.10
+                        gross_pnl = ((curr_price - entry_price) / entry_price) * 100.0
+                        net_pnl = gross_pnl - fee_slippage_pct
+                        
                         trade["exit_price"] = round(curr_price, 2)
-                        pnl_pct = round(((curr_price - entry_price) / entry_price) * 100.0, 2)
-                        trade["pnl_pct"] = pnl_pct
-                        trade["pnl_usd"] = round(pnl_pct * 10.0, 2) # assumindo lote fixo de $1000 por trade
+                        trade["pnl_pct"] = round(net_pnl, 2)
+                        trade["pnl_usd"] = round(net_pnl * 10.0, 2) # Lote padronizado
                         
                         # Testar se atinge Take Profit
                         if curr_price >= tp:
                             trade["status"] = "CLOSED"
                             trade["exit_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             trade["type"] = "🎯 TAKE PROFIT"
-                            trade["pnl_pct"] = round(((tp - entry_price) / entry_price) * 100.0, 2)
-                            trade["pnl_usd"] = round(trade["pnl_pct"] * 10.0, 2)
+                            tp_gross = ((tp - entry_price) / entry_price) * 100.0
+                            tp_net = tp_gross - fee_slippage_pct
+                            trade["pnl_pct"] = round(tp_net, 2)
+                            trade["pnl_usd"] = round(tp_net * 10.0, 2)
                             trade["exit_price"] = tp
                             modified = True
-                            notifier.add_log("SUCCESS", f"🎯 [PAPER TRADING 24/7] Take Profit Atingido em {symbol}! Lucro: +{trade['pnl_pct']:.2f}% (${trade['pnl_usd']:+.2f})")
-                            telegram_notifier.send_telegram_alert(f"🎯 *PAPER TRADING (TAKE PROFIT):*\nSímbolo: {symbol}\nLucro: +{trade['pnl_pct']:.2f}% (${trade['pnl_usd']:+.2f})")
+                            notifier.add_log("SUCCESS", f"🎯 [PAPER TRADING 24/7] Take Profit Atingido em {symbol}! Lucro Líquido: +{trade['pnl_pct']:.2f}% (${trade['pnl_usd']:+.2f})")
+                            telegram_notifier.send_telegram_alert(f"🎯 *PAPER TRADING (TAKE PROFIT):*\nSímbolo: {symbol}\nLucro Líquido (c/ Taxas): +{trade['pnl_pct']:.2f}% (${trade['pnl_usd']:+.2f})")
 
                         # Testar se atinge Stop Loss
                         elif curr_price <= sl:
                             trade["status"] = "CLOSED"
                             trade["exit_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             trade["type"] = "🛑 STOP LOSS"
-                            trade["pnl_pct"] = round(((sl - entry_price) / entry_price) * 100.0, 2)
-                            trade["pnl_usd"] = round(trade["pnl_pct"] * 10.0, 2)
+                            sl_gross = ((sl - entry_price) / entry_price) * 100.0
+                            sl_net = sl_gross - fee_slippage_pct
+                            trade["pnl_pct"] = round(sl_net, 2)
+                            trade["pnl_usd"] = round(sl_net * 10.0, 2)
                             trade["exit_price"] = sl
                             modified = True
-                            notifier.add_log("WARNING", f"🛑 [PAPER TRADING 24/7] Stop Loss Acionado em {symbol}! Perda: {trade['pnl_pct']:.2f}% (${trade['pnl_usd']:+.2f})")
-                            telegram_notifier.send_telegram_alert(f"🛑 *PAPER TRADING (STOP LOSS):*\nSímbolo: {symbol}\nResultado: {trade['pnl_pct']:.2f}% (${trade['pnl_usd']:+.2f})")
+                            notifier.add_log("WARNING", f"🛑 [PAPER TRADING 24/7] Stop Loss Acionado em {symbol}! Perda Líquida: {trade['pnl_pct']:.2f}% (${trade['pnl_usd']:+.2f})")
+                            telegram_notifier.send_telegram_alert(f"🛑 *PAPER TRADING (STOP LOSS):*\nSímbolo: {symbol}\nResultado Líquido (c/ Taxas): {trade['pnl_pct']:.2f}% (${trade['pnl_usd']:+.2f})")
                         else:
                             modified = True
                             
