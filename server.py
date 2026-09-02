@@ -184,6 +184,29 @@ class APIHandler(BaseHTTPRequestHandler):
             self._respond_json({"error": "Rota não encontrada"}, status=404)
 
 from src.paper_trading import paper_trading_engine, get_live_paper_trades
+import urllib.request
+import threading
+import time
+
+def start_keep_alive_thread():
+    def keep_alive_loop():
+        target_url = os.getenv("RENDER_EXTERNAL_URL", "https://tradeer-bot.onrender.com/healthz")
+        if not target_url.endswith("/healthz"):
+            target_url = target_url.rstrip("/") + "/healthz"
+        
+        notifier.add_log("INFO", f"🔄 Keep-Alive Ativo: Auto-ping configurado para {target_url} a cada 5 min.")
+        
+        while True:
+            time.sleep(300) # 5 minutos
+            try:
+                req = urllib.request.Request(target_url, headers={'User-Agent': 'TradeerBotKeepAlive/1.0'})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    pass
+            except Exception as e:
+                pass
+
+    t = threading.Thread(target=keep_alive_loop, daemon=True)
+    t.start()
 
 def run_server(port=None):
     if port is None:
@@ -191,6 +214,9 @@ def run_server(port=None):
     
     # Inicia o motor de simulação 24/7 em tempo real em segundo plano
     paper_trading_engine.start_background_loop(interval_seconds=30)
+    
+    # Inicia o auto-ping contra hibernação do Render
+    start_keep_alive_thread()
     
     server_address = ('', port)
     httpd = HTTPServer(server_address, APIHandler)
