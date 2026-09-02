@@ -55,6 +55,17 @@ class APIHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
 
     def do_GET(self):
+        if self.path in ['/', '/dashboard', '/index.html']:
+            dashboard_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dashboard', 'index.html')
+            if os.path.exists(dashboard_path):
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.end_headers()
+                with open(dashboard_path, 'rb') as f:
+                    self.wfile.write(f.read())
+                return
+
         if self.path in ['/healthz', '/ping', '/health']:
             self._respond_json({
                 "status": "healthy",
