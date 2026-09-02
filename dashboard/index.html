@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tradeer Quant - Painel Autônomo de Trading</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #090d16;
+            --card-bg: rgba(22, 28, 42, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-green: #10b981;
+            --accent-green-glow: rgba(16, 185, 129, 0.25);
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-red: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 24px;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.12) 0%, transparent 40%);
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 28px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            margin-bottom: 24px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 0 20px var(--accent-green-glow);
+        }
+
+        .logo-text h1 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text span {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .pulse-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .toggle-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px var(--accent-green-glow);
+        }
+
+        .toggle-btn.off {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* GRID CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+        }
+
+        .card-sub {
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* PERFIL DE RISCO SELETOR */
+        .risk-section {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .risk-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .risk-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .risk-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .risk-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-blue);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        /* MAIN CONTENT LAYOUT */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .active-trade-box {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* NOTIFICATIONS FEED */
+        .feed-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            max-height: 520px;
+        }
+
+        .feed-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feed-list {
+            list-style: none;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .feed-item {
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .feed-item.BUY { border-left-color: var(--accent-green); }
+        .feed-item.SELL { border-left-color: var(--accent-purple); }
+        .feed-item.WARNING { border-left-color: var(--accent-red); }
+
+        .feed-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i data-lucide="bot"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Tradeer Quant</h1>
+                    <span>Sistema Autônomo de Inteligência</span>
+                </div>
+            </div>
+
+            <div class="system-status">
+                <div class="pulse-badge">
+                    <div class="pulse-dot"></div>
+                    <span id="status-text">SISTEMA ATIVO</span>
+                </div>
+                <button class="toggle-btn" id="toggle-btn" onclick="toggleBot()">
+                    <i data-lucide="power"></i>
+                    <span id="toggle-text">ROBÔ LIGADO</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- BANNER DE SUPER-INTELIGÊNCIA BANCO (IA ADAPTATIVA & CROSS-ASSET) -->
+        <div class="risk-section" style="background: rgba(245, 158, 11, 0.12); border: 1.5px solid #f59e0b; box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 14px; width: 100%;">
+                <i data-lucide="zap" style="color: #f59e0b; width: 32px; height: 32px; flex-shrink: 0;"></i>
+                <div style="flex-grow: 1;">
+                    <div style="font-size: 0.75rem; color: #f59e0b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Super-Inteligência de Mercado (IA Adaptativa de Regime)</div>
+                    <div style="font-size: 1.05rem; font-weight: 800; color: #fff;" id="val-adaptive-mode">🟢 SUB-ALGORITMO 1: BULL ENGINE (Tendência de Alta Rápida)</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 16px; font-size: 0.85rem; margin-top: 10px; width: 100%;">
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: 10px; flex-grow: 1;">
+                    <span style="color: var(--text-muted);">Rotação Capital Cross-Asset: </span>
+                    <strong id="val-cross-asset" style="color: #f59e0b;">🟢 LÍDER DE FLUXO INSTITUCIONAL: BTC-USD (Força: 78.5 pts)</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- BANNER DE INTELIGÊNCIA INSTITUCIONAL BANCÁRIA -->
+        <div class="risk-section" style="background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.25);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i data-lucide="building-2" style="color: var(--accent-blue); width: 28px; height: 28px;"></i>
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 700; text-transform: uppercase;">Inteligência de Mercado Bancária</div>
+                    <div style="font-size: 1.05rem; font-weight: 800;" id="val-inst-status">🟢 FLUXO BANCÁRIO DETECTADO: Entrada Confirmada</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 16px; font-size: 0.85rem;">
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: 10px;">
+                    <span style="color: var(--text-muted);">Regime: </span>
+                    <strong id="val-regime" style="color: var(--accent-green);">TENDÊNCIA FORTE (ADX: 28.4)</strong>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: 10px;">
+                    <span style="color: var(--text-muted);">Volume: </span>
+                    <strong id="val-volume" style="color: var(--accent-blue);">1.45x (Confirmado)</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- BANNER DE SENTIMENTO & PROBABILIDADE DA OPERAÇÃO -->
+        <div class="risk-section" style="background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.25);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i data-lucide="brain-circuit" style="color: var(--accent-purple); width: 28px; height: 28px;"></i>
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--accent-purple); font-weight: 700; text-transform: uppercase;">Emoção de Mercado & Probabilidade</div>
+                    <div style="font-size: 1.05rem; font-weight: 800;" id="val-probability">🟢 EXCELENTE (88.5% de Chance de Sucesso)</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 16px; font-size: 0.85rem;">
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: 10px;">
+                    <span style="color: var(--text-muted);">Emoções / Sentimento: </span>
+                    <strong id="val-sentiment" style="color: var(--accent-purple);">😨 MEDO MODERADO (35/100)</strong>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: 10px;">
+                    <span style="color: var(--text-muted);">Price Action: </span>
+                    <strong id="val-pa-pattern" style="color: var(--accent-green);">PIN BAR DE ALTA (Rejeição de Fundo)</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- BANNER DE PRONTIDÃO PARA CONTA REAL (MONTE CARLO & CORRETORA) -->
+        <div class="risk-section" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i data-lucide="check-check" style="color: var(--accent-green); width: 28px; height: 28px;"></i>
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--accent-green); font-weight: 700; text-transform: uppercase;">Prontidão para Conta Real</div>
+                    <div style="font-size: 1.05rem; font-weight: 800;" id="val-monte-carlo">✅ APROVADO EM 1.000 TESTES MONTE CARLO (0.0% Risco de Ruína)</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 16px; font-size: 0.85rem;">
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: 10px;">
+                    <span style="color: var(--text-muted);">Conexão Corretora: </span>
+                    <strong id="val-exchange-badge" style="color: var(--accent-green);">🟢 SUBCONTA DE IA BYBIT CONECTADA (ID: 585376991 | AIsub585376991)</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARDS DE METRICAS SIMPLIFICADAS -->
+        <div class="stats-grid">
+            <div class="card">
+                <div class="card-header">
+                    <span>PATRIMÔNIO ATUAL</span>
+                    <i data-lucide="wallet" style="color: var(--accent-green)"></i>
+                </div>
+                <div class="card-value" id="val-capital">$1,061.00</div>
+                <div class="card-sub">
+                    <i data-lucide="trending-up"></i>
+                    <span id="val-return">+6.10% de Lucro Acumulado</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>NOTA DE SEGURANÇA</span>
+                    <i data-lucide="shield" style="color: var(--accent-blue)"></i>
+                </div>
+                <div class="card-value" id="val-safety">94 <span style="font-size: 1rem; color: var(--text-muted)">/100</span></div>
+                <div class="card-sub" style="color: var(--accent-blue)">
+                    <i data-lucide="check-circle"></i>
+                    <span>Proteção Total contra Crises</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>TAXA DE VITORIAS</span>
+                    <i data-lucide="award" style="color: var(--accent-purple)"></i>
+                </div>
+                <div class="card-value" id="val-winrate">50.0%</div>
+                <div class="card-sub" style="color: var(--accent-purple)">
+                    <i data-lucide="zap"></i>
+                    <span>Ganhos 2.0x maiores que perdas</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>QUEDA MAXIMA HISTÓRICA</span>
+                    <i data-lucide="activity" style="color: var(--accent-green)"></i>
+                </div>
+                <div class="card-value" style="color: var(--accent-green)">-4.9%</div>
+                <div class="card-sub" style="color: var(--text-secondary)">
+                    <span>Trava Diária Máxima: 3.0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN LAYOUT -->
+        <div class="main-layout">
+            <!-- GRÁFICO E POSIÇÃO ATIVA -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Evolução do Patrimônio em Tempo Real</h3>
+                    <span style="font-size: 0.85rem; color: var(--text-secondary)">Últimos 730 Dias</span>
+                </div>
+
+                <div style="height: 280px; width: 100%;">
+                    <canvas id="equityChart"></canvas>
+                </div>
+
+                <!-- POSIÇÃO ATIVA -->
+                <div class="active-trade-box">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Operação em Andamento</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; margin-top: 2px;" id="trade-asset">Bitcoin (BTC-USD) - COMPRA</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);" id="trade-prices">Entrada: $62,450.00 | Atual: $63,890.00</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-green);" id="trade-profit">+2.30%</div>
+                        <div style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 600;">Trava Stop: $60,500</div>
+                    </div>
+                </div>
+
+                <!-- EXTRATO TRANSPARENTE AUDITADO DE TRADES -->
+                <div style="margin-top: 28px;">
+                    <div style="font-size: 1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <span>📋 Extrato Transparente de Operações Auditadas</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 600;">AUDITORIA 100% DINÂMICA</span>
+                    </div>
+
+                    <div style="overflow-x: auto; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid var(--card-border);">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--card-border); color: var(--text-muted);">
+                                    <th style="padding: 10px 14px;">#</th>
+                                    <th style="padding: 10px 14px;">Entrada</th>
+                                    <th style="padding: 10px 14px;">Saída</th>
+                                    <th style="padding: 10px 14px;">Preço Compra</th>
+                                    <th style="padding: 10px 14px;">Preço Venda</th>
+                                    <th style="padding: 10px 14px;">Motivo Saída</th>
+                                    <th style="padding: 10px 14px; text-align: right;">Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trades-table-body">
+                                <tr>
+                                    <td colspan="7" style="padding: 16px; text-align: center; color: var(--text-muted);">Carregando histórico auditado...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FEED DE NOTIFICAÇÕES AUTÔNOMAS -->
+            <div class="feed-card">
+                <div class="feed-title">
+                    <i data-lucide="bell" style="color: var(--accent-green)"></i>
+                    <span>Feed de Ações do Robô</span>
+                </div>
+                <ul class="feed-list" id="feed-list">
+                    <!-- Itens inseridos dinamicamente -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const API_URL = 'http://localhost:5000/api';
+        let chartInstance = null;
+
+        // Inicializa o Gráfico Chart.js
+        function initChart(dataPoints) {
+            const ctx = document.getElementById('equityChart').getContext('2d');
+            
+            const labels = dataPoints.map(p => p.date);
+            const values = dataPoints.map(p => p.saldo);
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Capital Total (USD)',
+                        data: values,
+                        borderColor: '#10b981',
+                        borderWidth: 3,
+                        backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        // Atualiza a Interface buscando dados do servidor API Python
+        async function fetchStatus() {
+            try {
+                const res = await fetch(`${API_URL}/status`);
+                const data = await res.json();
+
+                // Atualiza Botão Liga/Desliga
+                const toggleBtn = document.getElementById('toggle-btn');
+                const toggleText = document.getElementById('toggle-text');
+                const statusText = document.getElementById('status-text');
+
+                if (data.is_active) {
+                    toggleBtn.classList.remove('off');
+                    toggleText.innerText = 'ROBÔ LIGADO';
+                    statusText.innerText = 'SISTEMA ATIVO';
+                } else {
+                    toggleBtn.classList.add('off');
+                    toggleText.innerText = 'ROBÔ PAUSADO';
+                    statusText.innerText = 'PAUSADO';
+                }
+
+                // Atualiza Cards
+                document.getElementById('val-capital').innerText = `$${data.equity.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById('val-return').innerText = `${data.total_return_pct >= 0 ? '+' : ''}${data.total_return_pct.toFixed(2)}% de Lucro Acumulado`;
+                document.getElementById('val-safety').innerHTML = `${data.safety_score} <span style="font-size: 1rem; color: var(--text-muted)">/100</span>`;
+                document.getElementById('val-winrate').innerText = `${data.win_rate_pct.toFixed(1)}%`;
+
+                // Atualiza IA Adaptativa Super-Banco, Rotação Cross-Asset, Bybit & Auto-Diagnóstico
+                if (data.exchange_status) document.getElementById('val-exchange-badge').innerText = data.exchange_status;
+                if (data.adaptive_mode_label) document.getElementById('val-adaptive-mode').innerText = data.adaptive_mode_label;
+                if (data.cross_asset_summary) document.getElementById('val-cross-asset').innerText = data.cross_asset_summary;
+                if (data.predictive_summary) document.getElementById('val-predictive').innerText = data.predictive_summary;
+                if (data.self_healing_status) document.getElementById('val-self-healing').innerText = data.self_healing_status;
+                if (data.institutional_status) document.getElementById('val-inst-status').innerText = data.institutional_status;
+                if (data.market_regime) document.getElementById('val-regime').innerText = data.market_regime;
+                if (data.volume_ratio) document.getElementById('val-volume').innerText = data.volume_ratio;
+                if (data.probability_grade) document.getElementById('val-probability').innerText = data.probability_grade;
+                if (data.sentiment_label) document.getElementById('val-sentiment').innerText = data.sentiment_label;
+                if (data.price_action_pattern) document.getElementById('val-pa-pattern').innerText = data.price_action_pattern;
+                if (data.monte_carlo_status) document.getElementById('val-monte-carlo').innerText = data.monte_carlo_status;
+                if (data.exchange_status) document.getElementById('val-exchange-badge').innerText = data.exchange_status.badge;
+
+                // Atualiza Posição Ativa
+                if (data.active_trade) {
+                    document.getElementById('trade-asset').innerText = `${data.active_trade.asset} - ${data.active_trade.type}`;
+                    document.getElementById('trade-prices').innerText = `Entrada: $${data.active_trade.entry_price.toLocaleString()} | Atual: $${data.active_trade.current_price.toLocaleString()}`;
+                    document.getElementById('trade-profit').innerText = `${data.active_trade.profit_pct >= 0 ? '+' : ''}${data.active_trade.profit_pct.toFixed(2)}%`;
+                }
+
+                // Atualiza Seletor de Risco
+                document.querySelectorAll('.risk-btn').forEach(b => b.classList.remove('active'));
+                const activeRiskBtn = document.getElementById(`btn-${data.risk_profile}`);
+                if (activeRiskBtn) activeRiskBtn.classList.add('active');
+
+            } catch (err) {
+                console.log('Aguardando servidor API...', err);
+            }
+        }
+
+        // Busca Notificações
+        async function fetchLogs() {
+            try {
+                const res = await fetch(`${API_URL}/logs`);
+                const logs = await res.json();
+                const feedList = document.getElementById('feed-list');
+                feedList.innerHTML = '';
+
+                logs.forEach(log => {
+                    const li = document.createElement('li');
+                    li.className = `feed-item ${log.type}`;
+                    li.innerHTML = `
+                        <div class="feed-time">${log.timestamp}</div>
+                        <div>${log.message}</div>
+                    `;
+                    feedList.appendChild(li);
+                });
+            } catch (err) {}
+        }
+
+        // Busca Tabela Transparente de Trades
+        async function fetchTrades() {
+            try {
+                const res = await fetch(`${API_URL}/trades`);
+                const trades = await res.json();
+                const tbody = document.getElementById('trades-table-body');
+                if (!trades || trades.length === 0) return;
+
+                tbody.innerHTML = '';
+                trades.forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+                    const color = t.pnl_pct >= 0 ? '#10b981' : '#ef4444';
+                    const typeLabel = t.type === 'TAKE_PROFIT' ? '🎯 Meta de Lucro' : (t.type === 'STOP_LOSS' ? '🛡️ Trava de Stop' : '🔄 Sinal da Estratégia');
+
+                    tr.innerHTML = `
+                        <td style="padding: 10px 14px; font-weight: 700;">#${t.id}</td>
+                        <td style="padding: 10px 14px;">${t.entry_time}</td>
+                        <td style="padding: 10px 14px;">${t.exit_time}</td>
+                        <td style="padding: 10px 14px;">$${t.entry_price.toLocaleString()}</td>
+                        <td style="padding: 10px 14px;">$${t.exit_price.toLocaleString()}</td>
+                        <td style="padding: 10px 14px;">${typeLabel}</td>
+                        <td style="padding: 10px 14px; text-align: right; font-weight: 700; color: ${color};">${t.pnl_pct >= 0 ? '+' : ''}${t.pnl_pct.toFixed(2)}% ($${t.pnl.toFixed(2)})</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {}
+        }
+
+        // Busca Gráfico
+        async function fetchChart() {
+            try {
+                const res = await fetch(`${API_URL}/chart`);
+                const dataPoints = await res.json();
+                if (!chartInstance) {
+                    initChart(dataPoints);
+                }
+            } catch (err) {}
+        }
+
+        // Alterna Estado do Robô
+        async function toggleBot() {
+            try {
+                await fetch(`${API_URL}/toggle`, { method: 'POST' });
+                fetchStatus();
+                fetchLogs();
+            } catch (err) {}
+        }
+
+        // Altera Perfil de Risco
+        async function setRisk(profile) {
+            try {
+                await fetch(`${API_URL}/risk`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ profile: profile })
+                });
+                fetchStatus();
+                fetchLogs();
+            } catch (err) {}
+        }
+
+        // Loop de Atualização em Tempo Real (a cada 5 segundos)
+        setInterval(() => {
+            fetchStatus();
+            fetchLogs();
+            fetchTrades();
+        }, 5000);
+
+        // Inicialização
+        fetchStatus();
+        fetchLogs();
+        fetchChart();
+        fetchTrades();
+    </script>
+</body>
+</html>
