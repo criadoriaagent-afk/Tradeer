@@ -24,74 +24,18 @@ FILE_PATH = os.path.join(DATA_DIR, 'paper_trades_data.json')
 
 INITIAL_SEED_TRADES = [
     {
-        "id": 105,
-        "entry_time": "2026-09-02 07:30:00",
+        "id": 106,
+        "entry_time": "2026-09-04 02:40:31",
         "exit_time": "EM ANDAMENTO",
         "symbol": "BTC-USD",
-        "entry_price": 64200.00,
-        "exit_price": 64850.00,
+        "entry_price": 80819.42,
+        "exit_price": 80819.42,
         "type": "🟢 COMPRA EM TENDÊNCIA (LIVE)",
-        "stop_loss": 60990.00,
-        "take_profit": 71904.00,
-        "pnl_pct": 1.01,
-        "pnl_usd": 10.12,
+        "stop_loss": 76778.45,
+        "take_profit": 87520.87,
+        "pnl_pct": 0.00,
+        "pnl_usd": 0.00,
         "status": "OPEN"
-    },
-    {
-        "id": 104,
-        "entry_time": "2026-09-01 21:10:00",
-        "exit_time": "2026-09-02 03:45:00",
-        "symbol": "BTC-USD",
-        "entry_price": 63100.00,
-        "exit_price": 64550.00,
-        "type": "🎯 TAKE PROFIT",
-        "stop_loss": 59945.00,
-        "take_profit": 64550.00,
-        "pnl_pct": 2.30,
-        "pnl_usd": 23.00,
-        "status": "CLOSED"
-    },
-    {
-        "id": 103,
-        "entry_time": "2026-09-01 14:00:00",
-        "exit_time": "2026-09-01 18:20:00",
-        "symbol": "ETH-USD",
-        "entry_price": 3450.00,
-        "exit_price": 3540.00,
-        "type": "🎯 TAKE PROFIT",
-        "stop_loss": 3277.50,
-        "take_profit": 3540.00,
-        "pnl_pct": 2.61,
-        "pnl_usd": 26.10,
-        "status": "CLOSED"
-    },
-    {
-        "id": 102,
-        "entry_time": "2026-09-01 08:15:00",
-        "exit_time": "2026-09-01 11:30:00",
-        "symbol": "SOL-USD",
-        "entry_price": 142.00,
-        "exit_price": 139.16,
-        "type": "🛑 STOP LOSS",
-        "stop_loss": 139.16,
-        "take_profit": 159.04,
-        "pnl_pct": -2.00,
-        "pnl_usd": -20.00,
-        "status": "CLOSED"
-    },
-    {
-        "id": 101,
-        "entry_time": "2026-08-31 19:40:00",
-        "exit_time": "2026-09-01 02:10:00",
-        "symbol": "BTC-USD",
-        "entry_price": 61800.00,
-        "exit_price": 63200.00,
-        "type": "🎯 TAKE PROFIT",
-        "stop_loss": 58710.00,
-        "take_profit": 63200.00,
-        "pnl_pct": 2.27,
-        "pnl_usd": 22.70,
-        "status": "CLOSED"
     }
 ]
 
