@@ -97,14 +97,15 @@ class BybitAIConnector:
     def get_bybit_usdt_balance(self) -> float:
         """
         Retorna o saldo real em USDT da Subconta de IA na Bybit.
+        Se não houver saldo real depositado na corretora, retorna 0.00 (Modo Paper Trading).
         """
         if self.exchange and self.api_key and self.api_secret:
             try:
                 balance = self.exchange.fetch_balance()
-                return float(balance.get("USDT", {}).get("free", 1000.00))
+                return float(balance.get("USDT", {}).get("free", 0.00))
             except Exception:
                 pass
-        return 1000.00
+        return 0.00
 
     def place_ai_order(self, symbol: str, side: str, amount: float, stop_loss: float = None, take_profit: float = None) -> dict:
         """
