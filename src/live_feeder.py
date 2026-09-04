@@ -1,10 +1,8 @@
-"""
-Módulo de Conexão de Mercado ao Vivo (Live Market Feeder).
-"""
 import pandas as pd
 import yfinance as yf
 import os
 import sys
+import time
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.institutional_engine import analyze_institutional_flow
@@ -14,10 +12,12 @@ class LiveMarketFeeder:
     def __init__(self, symbols=["BTC-USD", "ETH-USD", "SOL-USD"]):
         self.symbols = symbols
         self.cached_dfs = {}
+        self.last_summary = None
+        self.last_fetch_time = 0
         
     def fetch_symbol_dataframes(self, symbol: str = "BTC-USD") -> tuple:
         """
-        Baixa os DataFrames de 1D e 4H para o ativo selecionado.
+        Baixa os DataFrames de 1D e 4H para o ativo selecionado com fallback de segurança.
         """
         try:
             df_1d = yf.download(symbol, period="60d", interval="1d", progress=False)
@@ -39,15 +39,23 @@ class LiveMarketFeeder:
         except Exception:
             return pd.DataFrame(), pd.DataFrame()
 
-    def get_live_market_summary(self) -> dict:
+    def get_live_market_summary(self, max_age_seconds: int = 45) -> dict:
         """
-        Consulta os servidores de dados em tempo real e retorna o relatório dos grandes bancos.
+        Consulta os servidores de dados com cache de 45 segundos para evitar bloqueios de API.
         """
+        now = time.time()
+        if self.last_summary and (now - self.last_fetch_time < max_age_seconds):
+            return self.last_summary
+
         summary = {}
         for symbol in self.symbols:
             try:
                 df, df_4h = self.fetch_symbol_dataframes(symbol)
                 if df.empty:
+                    # Tenta reaproveitar do cache em caso de timeout momentâneo
+                    if self.last_summary and symbol in self.last_summary:
+                        summary[symbol] = self.last_summary[symbol]
+                        continue
                     raise ValueError("DataFrame vazio obtido do Yahoo Finance")
 
                 self.cached_dfs[symbol] = {"1d": df, "4h": df_4h}
@@ -68,15 +76,23 @@ class LiveMarketFeeder:
                     "df_4h": df_4h
                 }
             except Exception as e:
-                summary[symbol] = {
-                    "error": str(e),
-                    "price": 0.0,
-                    "change_24h": 0.0,
-                    "institutional": analyze_institutional_flow(pd.DataFrame()),
-                    "signal": 0,
-                    "df_1d": pd.DataFrame(),
-                    "df_4h": pd.DataFrame()
-                }
+                if self.last_summary and symbol in self.last_summary:
+                    summary[symbol] = self.last_summary[symbol]
+                else:
+                    summary[symbol] = {
+                        "error": str(e),
+                        "price": 0.0,
+                        "change_24h": 0.0,
+                        "institutional": analyze_institutional_flow(pd.DataFrame()),
+                        "signal": 0,
+                        "df_1d": pd.DataFrame(),
+                        "df_4h": pd.DataFrame()
+                    }
+
+        if summary:
+            self.last_summary = summary
+            self.last_fetch_time = now
+
         return summary
 
 if __name__ == '__main__':
