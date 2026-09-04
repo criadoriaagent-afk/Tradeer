@@ -246,16 +246,18 @@ class PaperTradingEngine:
         self.is_running = True
         
         def loop():
+            import pandas as pd
             from src.live_feeder import LiveMarketFeeder
             from src.validation_matrix import evaluate_safety_matrix
+            from src.bybit_connector import bybit_ai_connector
             
             feeder = LiveMarketFeeder(symbols=["BTC-USD", "ETH-USD", "SOL-USD"])
-            notifier.add_log("SUCCESS", f"🚀 Motor de Paper Trading 24/7 iniciado (Varredura a cada {interval_seconds}s).")
+            notifier.add_log("SUCCESS", f"🚀 Motor de Paper Trading 24/7 iniciado com Multi-Timeframe e ATR Dinâmico (Varredura a cada {interval_seconds}s).")
             
             while self.is_running:
                 try:
                     summary = feeder.get_live_market_summary()
-                    live_prices = {sym: summary[sym]["price"] for sym in summary if "price" in summary[sym]}
+                    live_prices = {sym: summary[sym]["price"] for sym in summary if "price" in summary[sym] and summary[sym]["price"] > 0}
                     
                     # 1. Atualiza posições em aberto com preços reais do mercado
                     self.update_open_trades_with_live_prices(live_prices)
@@ -265,14 +267,33 @@ class PaperTradingEngine:
                         has_open = any(t["symbol"] == symbol and t["status"] == "OPEN" for t in self.get_trades())
                         if not has_open and symbol in live_prices and live_prices[symbol] > 0:
                             price = live_prices[symbol]
-                            matrix = evaluate_safety_matrix()
+                            sym_data = summary.get(symbol, {})
+                            df_1d = sym_data.get("df_1d")
+                            df_4h = sym_data.get("df_4h")
+                            
+                            funding_rate = bybit_ai_connector.get_funding_rate(symbol)
+                            matrix = evaluate_safety_matrix(df=df_1d, df_4h=df_4h, funding_rate_pct=funding_rate)
+                            
                             if matrix.get("is_trade_authorized"):
+                                # Cálculo dinâmico de ATR para Stop Loss e Take Profit
+                                if df_1d is not None and not df_1d.empty and 'high' in df_1d.columns:
+                                    high_low = df_1d['high'] - df_1d['low']
+                                    high_close = (df_1d['high'] - df_1d['close'].shift(1)).abs()
+                                    low_close = (df_1d['low'] - df_1d['close'].shift(1)).abs()
+                                    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+                                    atr = float(tr.rolling(window=14).mean().iloc[-1])
+                                    stop_loss = round(price - (1.5 * atr), 2)
+                                    take_profit = round(price + (2.5 * atr), 2)
+                                else:
+                                    stop_loss = round(price * 0.95, 2)
+                                    take_profit = round(price * 1.12, 2)
+
                                 self.add_trade(
                                     symbol=symbol,
                                     side="COMPRA",
                                     entry_price=price,
-                                    stop_loss=price * 0.95,
-                                    take_profit=price * 1.12
+                                    stop_loss=stop_loss,
+                                    take_profit=take_profit
                                 )
                 except Exception as e:
                     notifier.add_log("WARNING", f"Erro no loop de Paper Trading 24/7: {e}")

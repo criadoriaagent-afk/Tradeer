@@ -88,11 +88,15 @@ class APIHandler(BaseHTTPRequestHandler):
             # Cotação e Análise de Mercado ao Vivo
             live_summary = live_feeder.get_live_market_summary()
             btc_live = live_summary.get('BTC-USD', {})
+            btc_df_1d = btc_live.get('df_1d')
+            btc_df_4h = btc_live.get('df_4h')
+            funding_rate = bybit_ai_connector.get_funding_rate('BTCUSDT')
+            
             inst = btc_live.get('institutional', {})
             sentiment = fetch_crypto_sentiment()
-            predictive = calculate_predictive_projection()
-            matrix = evaluate_safety_matrix()
-            adaptive = determine_adaptive_mode()
+            predictive = calculate_predictive_projection(df=btc_df_1d)
+            matrix = evaluate_safety_matrix(df=btc_df_1d, df_4h=btc_df_4h, funding_rate_pct=funding_rate)
+            adaptive = determine_adaptive_mode(df=btc_df_1d)
             cross = analyze_cross_asset_rotation()
             bybit_status = bybit_ai_connector.get_status_label()
             bybit_balance = bybit_ai_connector.get_bybit_usdt_balance()
