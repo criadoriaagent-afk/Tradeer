@@ -413,7 +413,7 @@
                 <i data-lucide="brain-circuit" style="color: var(--accent-purple); width: 28px; height: 28px;"></i>
                 <div>
                     <div style="font-size: 0.75rem; color: var(--accent-purple); font-weight: 700; text-transform: uppercase;">Emoção de Mercado & Probabilidade</div>
-                    <div style="font-size: 1.05rem; font-weight: 800;" id="val-probability">🟢 EXCELENTE (88.5% de Chance de Sucesso)</div>
+                    <div style="font-size: 1.05rem; font-weight: 800;" id="val-probability">🟢 ALTA (68.0% de Expectativa Estatística)</div>
                 </div>
             </div>
             <div style="display: flex; gap: 16px; font-size: 0.85rem;">
@@ -423,7 +423,7 @@
                 </div>
                 <div style="background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: 10px;">
                     <span style="color: var(--text-muted);">Price Action: </span>
-                    <strong id="val-pa-pattern" style="color: var(--accent-green);">PIN BAR DE ALTA (Rejeição de Fundo)</strong>
+                    <strong id="val-pa-pattern" style="color: var(--accent-green);">ROMPIMENTO DE CANAL DONCHIAN (30d - Calibrado)</strong>
                 </div>
             </div>
         </div>
@@ -449,13 +449,13 @@
         <div class="stats-grid">
             <div class="card">
                 <div class="card-header">
-                    <span>PATRIMÔNIO ATUAL</span>
+                    <span>SALDO REAL BYBIT</span>
                     <i data-lucide="wallet" style="color: var(--accent-green)"></i>
                 </div>
-                <div class="card-value" id="val-capital">$1,061.00</div>
+                <div class="card-value" id="val-capital">$0.00</div>
                 <div class="card-sub">
                     <i data-lucide="trending-up"></i>
-                    <span id="val-return">+6.10% de Lucro Acumulado</span>
+                    <span id="val-return">🟢 SALDO REAL BYBIT: $0.00 USDT (PAPER TRADING ATIVO)</span>
                 </div>
             </div>
 
@@ -671,6 +671,12 @@
                 const res = await fetch(`${API_URL}/status`);
                 const data = await res.json();
 
+                // Helper seguro para evitar erros de TypeError no JS
+                const setInnerText = (id, text) => {
+                    const el = document.getElementById(id);
+                    if (el && text !== undefined && text !== null) el.innerText = text;
+                };
+
                 // Atualiza Botão Liga/Desliga
                 const toggleBtn = document.getElementById('toggle-btn');
                 const toggleText = document.getElementById('toggle-text');
@@ -686,32 +692,29 @@
                     statusText.innerText = 'PAUSADO';
                 }
 
-                // Atualiza Cards
-                document.getElementById('val-capital').innerText = `$${data.equity.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-                document.getElementById('val-return').innerText = `${data.total_return_pct >= 0 ? '+' : ''}${data.total_return_pct.toFixed(2)}% de Lucro Acumulado`;
-                document.getElementById('val-safety').innerHTML = `${data.safety_score} <span style="font-size: 1rem; color: var(--text-muted)">/100</span>`;
-                document.getElementById('val-winrate').innerText = `${data.win_rate_pct.toFixed(1)}%`;
+                // Atualiza Cards de Métricas
+                const bybitBal = data.bybit_balance !== undefined ? data.bybit_balance : 0.00;
+                setInnerText('val-capital', `$${bybitBal.toLocaleString('en-US', {minimumFractionDigits: 2})}`);
+                setInnerText('val-return', `🟢 SALDO REAL BYBIT: $${bybitBal.toFixed(2)} USDT (PAPER TRADING ATIVO)`);
+                setInnerText('val-winrate', `${data.win_rate_pct.toFixed(1)}%`);
 
-                // Atualiza IA Adaptativa Super-Banco, Rotação Cross-Asset, Bybit & Auto-Diagnóstico
-                if (data.exchange_status) document.getElementById('val-exchange-badge').innerText = data.exchange_status;
-                if (data.adaptive_mode_label) document.getElementById('val-adaptive-mode').innerText = data.adaptive_mode_label;
-                if (data.cross_asset_summary) document.getElementById('val-cross-asset').innerText = data.cross_asset_summary;
-                if (data.predictive_summary) document.getElementById('val-predictive').innerText = data.predictive_summary;
-                if (data.self_healing_status) document.getElementById('val-self-healing').innerText = data.self_healing_status;
-                if (data.institutional_status) document.getElementById('val-inst-status').innerText = data.institutional_status;
-                if (data.market_regime) document.getElementById('val-regime').innerText = data.market_regime;
-                if (data.volume_ratio) document.getElementById('val-volume').innerText = data.volume_ratio;
-                if (data.probability_grade) document.getElementById('val-probability').innerText = data.probability_grade;
-                if (data.sentiment_label) document.getElementById('val-sentiment').innerText = data.sentiment_label;
-                if (data.price_action_pattern) document.getElementById('val-pa-pattern').innerText = data.price_action_pattern;
-                if (data.monte_carlo_status) document.getElementById('val-monte-carlo').innerText = data.monte_carlo_status;
-                if (data.exchange_status) document.getElementById('val-exchange-badge').innerText = data.exchange_status.badge;
+                // Atualiza Banners de Inteligência
+                setInnerText('val-exchange-badge', data.exchange_status);
+                setInnerText('val-adaptive-mode', data.adaptive_mode_label);
+                setInnerText('val-cross-asset', data.cross_asset_summary);
+                setInnerText('val-inst-status', data.institutional_status);
+                setInnerText('val-regime', data.market_regime);
+                setInnerText('val-volume', data.volume_ratio);
+                setInnerText('val-probability', data.probability_grade);
+                setInnerText('val-sentiment', data.sentiment_label);
+                setInnerText('val-pa-pattern', data.price_action_pattern);
+                setInnerText('val-monte-carlo', data.monte_carlo_status);
 
                 // Atualiza Posição Ativa
                 if (data.active_trade) {
-                    document.getElementById('trade-asset').innerText = `${data.active_trade.asset} - ${data.active_trade.type}`;
-                    document.getElementById('trade-prices').innerText = `Entrada: $${data.active_trade.entry_price.toLocaleString()} | Atual: $${data.active_trade.current_price.toLocaleString()}`;
-                    document.getElementById('trade-profit').innerText = `${data.active_trade.profit_pct >= 0 ? '+' : ''}${data.active_trade.profit_pct.toFixed(2)}%`;
+                    setInnerText('trade-asset', `${data.active_trade.asset} - ${data.active_trade.type}`);
+                    setInnerText('trade-prices', `Entrada: $${data.active_trade.entry_price.toLocaleString()} | Atual: $${data.active_trade.current_price.toLocaleString()}`);
+                    setInnerText('trade-profit', `${data.active_trade.profit_pct >= 0 ? '+' : ''}${data.active_trade.profit_pct.toFixed(2)}%`);
                 }
 
                 // Atualiza Seletor de Risco
