@@ -108,6 +108,10 @@ class APIHandler(BaseHTTPRequestHandler):
             pa_analysis = analyze_price_action(btc_df_1d) if btc_df_1d is not None and not btc_df_1d.empty else {"pattern_name": "ROMPIMENTO DE CANAL DONCHIAN (30d - Calibrado)"}
             prob_analysis = calculate_trade_probability(btc_df_1d)
 
+            approved_cnt = matrix.get('approved_count', 6)
+            total_flt = matrix.get('total_filters', 7)
+            real_safety_score = round((approved_cnt / total_flt) * 100) if total_flt > 0 else 85
+
             response_data = {
                 "is_active": user_control['is_active'],
                 "risk_profile": user_control['risk_profile'],
@@ -121,7 +125,7 @@ class APIHandler(BaseHTTPRequestHandler):
                 "profit_factor": audit.get('profit_factor', 2.0),
                 "max_drawdown_pct": audit.get('max_drawdown_pct', 4.91),
                 "total_trades": audit.get('total_trades', 12),
-                "safety_score": 100,
+                "safety_score": real_safety_score,
                 "adaptive_mode_label": adaptive['mode_label'],
                 "adaptive_desc": adaptive['description'],
                 "cross_asset_summary": cross['summary'],
