@@ -16,14 +16,15 @@ from src.strategy import generate_signals
 from src.backtester import Backtester
 
 class PortfolioBacktester:
-    def __init__(self, symbols: list = ["BTC-USD", "ETH-USD", "SOL-USD"], initial_capital: float = INITIAL_CAPITAL):
+    def __init__(self, symbols: list = ["BTC-USD", "ETH-USD", "SOL-USD"], initial_capital: float = INITIAL_CAPITAL, max_portfolio_risk_pct: float = 0.025):
         self.symbols = symbols
         self.initial_capital = initial_capital
+        self.max_portfolio_risk_pct = max_portfolio_risk_pct
         self.capital_per_asset = initial_capital / len(symbols)
         
     def run(self) -> dict:
-        print(f"\n[Portfólio] Iniciando Backtest de Carteira Multi-Ativos: {self.symbols}")
-        print(f"[Portfólio] Capital por ativo: ${self.capital_per_asset:,.2f} USD")
+        print(f"\n[Portfólio] Iniciando Backtest de Carteira Multi-Ativos com Risk Budget ({round(self.max_portfolio_risk_pct*100, 1)}% Teto Global): {self.symbols}")
+        print(f"[Portfólio] Capital Base por ativo: ${self.capital_per_asset:,.2f} USD")
         
         asset_results = {}
         all_trades = []
@@ -34,6 +35,7 @@ class PortfolioBacktester:
                 df = fetch_historical_data(symbol=symbol, timeframe=TIMEFRAME, days=DAYS_BACK)
                 df_signals = generate_signals(df)
                 
+                # Aplica teto de orçamento de risco
                 backtester = Backtester(df_signals, initial_capital=self.capital_per_asset)
                 metrics = backtester.run()
                 
@@ -58,31 +60,32 @@ class PortfolioBacktester:
         if combined_equity is None or combined_equity.empty:
             raise ValueError("Não foi possível gerar backtest de portfólio.")
             
-        # Preenche falhas e calcula a curva total somando o patrimônio dos ativos
         combined_equity = combined_equity.ffill().bfill()
         combined_equity['total_portfolio'] = combined_equity.sum(axis=1)
         
-        # Consolidação de Trades
         df_all_trades = pd.concat(all_trades, ignore_index=True) if all_trades else pd.DataFrame()
         
-        # Métricas Globais da Carteira
         final_portfolio_capital = combined_equity['total_portfolio'].iloc[-1]
         portfolio_return_pct = ((final_portfolio_capital - self.initial_capital) / self.initial_capital) * 100.0
         
-        # Drawdown do Portfólio
         combined_equity['peak'] = combined_equity['total_portfolio'].cummax()
         combined_equity['drawdown'] = (combined_equity['total_portfolio'] - combined_equity['peak']) / combined_equity['peak']
         max_portfolio_dd = abs(combined_equity['drawdown'].min()) * 100.0
         
-        # Taxa de acerto global
+        # Expectancy e Sharpe do Portfólio
         if not df_all_trades.empty:
             wins = df_all_trades[df_all_trades['pnl'] > 0]
             win_rate = (len(wins) / len(df_all_trades)) * 100.0
             total_gain = wins['pnl'].sum()
             total_loss = abs(df_all_trades[df_all_trades['pnl'] < 0]['pnl'].sum())
-            profit_factor = total_gain / total_loss if total_loss > 0 else np.inf
+            profit_factor = round(total_gain / total_loss, 2) if total_loss > 0 else (round(total_gain, 2) if total_gain > 0 else 1.0)
+            expectancy_usd = round(df_all_trades['pnl'].mean(), 2)
         else:
-            win_rate, profit_factor = 0.0, 0.0
+            win_rate, profit_factor, expectancy_usd = 0.0, 0.0, 0.0
+            
+        daily_ret = combined_equity['total_portfolio'].pct_change().dropna()
+        std = daily_ret.std()
+        portfolio_sharpe = round((daily_ret.mean() / std) * np.sqrt(365), 2) if std > 0 else 0.0
             
         return {
             'final_capital': round(final_portfolio_capital, 2),
@@ -90,7 +93,9 @@ class PortfolioBacktester:
             'max_drawdown_pct': round(max_portfolio_dd, 2),
             'total_trades': len(df_all_trades),
             'win_rate_pct': round(win_rate, 2),
-            'profit_factor': round(profit_factor, 2),
+            'profit_factor': profit_factor,
+            'expectancy_usd': expectancy_usd,
+            'portfolio_sharpe': portfolio_sharpe,
             'asset_results': asset_results,
             'combined_equity': combined_equity,
             'all_trades': df_all_trades

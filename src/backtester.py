@@ -175,13 +175,26 @@ class Backtester:
         win_rate = (len(winning_trades) / total_trades) * 100.0
         total_gain = winning_trades['pnl'].sum()
         total_loss = abs(losing_trades['pnl'].sum())
-        profit_factor = total_gain / total_loss if total_loss > 0 else np.inf
+        profit_factor = round(total_gain / total_loss, 2) if total_loss > 0 else (round(total_gain, 2) if total_gain > 0 else 1.0)
         
-        # Max Drawdown
+        expectancy_usd = round(df_trades['pnl'].mean(), 2)
+        
+        # Max Drawdown & Duração Máxima de Drawdown (em dias)
         df_equity['peak'] = df_equity['equity'].cummax()
         df_equity['drawdown'] = (df_equity['equity'] - df_equity['peak']) / df_equity['peak']
         max_drawdown = abs(df_equity['drawdown'].min()) * 100.0
         
+        # Duração do drawdown
+        in_dd = df_equity['equity'] < df_equity['peak']
+        dd_groups = (~in_dd).cumsum()
+        dd_durations = in_dd.groupby(dd_groups).sum()
+        max_dd_duration_days = int(dd_durations.max()) if not dd_durations.empty else 0
+        
+        # Sharpe Ratio
+        daily_returns = df_equity['equity'].pct_change().dropna()
+        std = daily_returns.std()
+        sharpe_ratio = round((daily_returns.mean() / std) * np.sqrt(365), 2) if std > 0 else 0.0
+
         total_return_pct = ((final_capital - self.initial_capital) / self.initial_capital) * 100.0
 
         return {
@@ -191,8 +204,37 @@ class Backtester:
             'final_capital': round(final_capital, 2),
             'total_return_pct': round(total_return_pct, 2),
             'win_rate_pct': round(win_rate, 2),
-            'profit_factor': round(profit_factor, 2),
+            'profit_factor': profit_factor,
+            'expectancy_usd': expectancy_usd,
             'max_drawdown_pct': round(max_drawdown, 2),
+            'max_dd_duration_days': max_dd_duration_days,
+            'sharpe_ratio': sharpe_ratio,
             'trades_df': df_trades,
             'equity_df': df_equity
         }
+
+    def run_friction_stress_test(self, scenarios: list = [0.0015, 0.0020, 0.0040, 0.0060]) -> dict:
+        """
+        Executa a simulação sob múltiplos cenários de estresse de fricção (Taxas + Slippage).
+        """
+        original_cost_fn = self.risk_manager.apply_costs
+        stress_results = {}
+        
+        for friction_rate in scenarios:
+            self.risk_manager.apply_costs = lambda capital, f=friction_rate: capital * f
+            self.trades = []
+            self.equity_curve = []
+            res = self.run()
+            scenario_name = f"{round(friction_rate * 100, 2)}%"
+            stress_results[scenario_name] = {
+                "friction_rate_pct": round(friction_rate * 100, 2),
+                "total_return_pct": res["total_return_pct"],
+                "final_capital": res["final_capital"],
+                "profit_factor": res["profit_factor"],
+                "win_rate_pct": res["win_rate_pct"],
+                "expectancy_usd": res["expectancy_usd"],
+                "max_drawdown_pct": res["max_drawdown_pct"]
+            }
+            
+        self.risk_manager.apply_costs = original_cost_fn
+        return stress_results
