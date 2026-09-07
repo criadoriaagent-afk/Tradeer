@@ -102,6 +102,40 @@ class APIHandler(BaseHTTPRequestHandler):
             bybit_balance = bybit_ai_connector.get_bybit_usdt_balance()
             clock_info = bybit_ai_connector.verify_clock_sync()
             
+            from src.paper_trading import paper_trading_engine
+            open_trades = [t for t in paper_trading_engine.get_trades() if t.get('status') == 'OPEN']
+            if open_trades:
+                top_open = open_trades[0]
+                sym = top_open.get('symbol', 'BTC-USD')
+                asset_names = {
+                    'BTC-USD': 'Bitcoin (BTC-USD)',
+                    'ETH-USD': 'Ethereum (ETH-USD)',
+                    'SOL-USD': 'Solana (SOL-USD)'
+                }
+                asset_label = asset_names.get(sym, sym)
+                
+                curr_price = top_open.get('exit_price', top_open.get('entry_price', 0.0))
+                if sym in live_summary and 'price' in live_summary[sym] and live_summary[sym]['price'] > 0:
+                    curr_price = live_summary[sym]['price']
+                
+                entry_p = top_open.get('entry_price', 0.0)
+                pnl_pct = top_open.get('pnl_pct', 0.0)
+                if entry_p > 0 and curr_price > 0:
+                    gross_pnl = ((curr_price - entry_p) / entry_p) * 100.0
+                    pnl_pct = round(gross_pnl - 0.10, 2)
+
+                active_trade_data = {
+                    "asset": asset_label,
+                    "type": top_open.get("type", "COMPRA EM TENDÊNCIA (LIVE)"),
+                    "entry_price": entry_p,
+                    "current_price": curr_price,
+                    "profit_pct": pnl_pct,
+                    "pnl_usd": top_open.get("pnl_usd", 0.0),
+                    "stop_loss": top_open.get("stop_loss", round(entry_p * 0.95, 2))
+                }
+            else:
+                active_trade_data = None
+
             from src.price_action import analyze_price_action
             from src.probability_calculator import calculate_trade_probability
 
@@ -144,14 +178,7 @@ class APIHandler(BaseHTTPRequestHandler):
                 "win_probability": f"{prob_analysis.get('win_probability', 68.0)}% Expectativa Estatística",
                 "probability_grade": prob_analysis.get('grade', '🟢 ALTA (Expectativa Estatística)'),
                 "monitored_assets": ["BTC-USD", "ETH-USD", "SOL-USD"],
-                "active_trade": {
-                    "asset": "Bitcoin (BTC-USD)",
-                    "type": "COMPRA EM TENDÊNCIA (BYBIT AI SUBACCOUNT)",
-                    "entry_price": btc_live.get('price', 62450.0),
-                    "current_price": btc_live.get('price', 63890.0),
-                    "profit_pct": +2.30,
-                    "stop_loss": round(btc_live.get('price', 62450.0) * 0.95, 2)
-                }
+                "active_trade": active_trade_data
             }
             self._respond_json(response_data)
             

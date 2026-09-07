@@ -512,12 +512,12 @@
                 <div class="active-trade-box">
                     <div>
                         <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Operação em Andamento</div>
-                        <div style="font-size: 1.1rem; font-weight: 800; margin-top: 2px;" id="trade-asset">Bitcoin (BTC-USD) - COMPRA</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);" id="trade-prices">Entrada: $62,450.00 | Atual: $63,890.00</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; margin-top: 2px;" id="trade-asset">Carregando...</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);" id="trade-prices">Buscando cotações ao vivo...</div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-green);" id="trade-profit">+2.30%</div>
-                        <div style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 600;">Trava Stop: $60,500</div>
+                        <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-green);" id="trade-profit">0.00%</div>
+                        <div style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 600;" id="trade-stop">Trava Stop: --</div>
                     </div>
                 </div>
 
@@ -711,10 +711,31 @@
                 setInnerText('val-monte-carlo', data.monte_carlo_status);
 
                 // Atualiza Posição Ativa
+                const profitEl = document.getElementById('trade-profit');
                 if (data.active_trade) {
                     setInnerText('trade-asset', `${data.active_trade.asset} - ${data.active_trade.type}`);
-                    setInnerText('trade-prices', `Entrada: $${data.active_trade.entry_price.toLocaleString()} | Atual: $${data.active_trade.current_price.toLocaleString()}`);
-                    setInnerText('trade-profit', `${data.active_trade.profit_pct >= 0 ? '+' : ''}${data.active_trade.profit_pct.toFixed(2)}%`);
+                    const entryFormatted = data.active_trade.entry_price ? data.active_trade.entry_price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00';
+                    const currFormatted = data.active_trade.current_price ? data.active_trade.current_price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00';
+                    setInnerText('trade-prices', `Entrada: $${entryFormatted} | Atual: $${currFormatted}`);
+                    
+                    const pnlPct = data.active_trade.profit_pct || 0;
+                    const pnlUsd = data.active_trade.pnl_usd || 0;
+                    const pnlText = `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}% ($${pnlUsd >= 0 ? '+' : ''}${pnlUsd.toFixed(2)})`;
+                    setInnerText('trade-profit', pnlText);
+                    
+                    if (profitEl) {
+                        profitEl.style.color = pnlPct >= 0 ? '#10b981' : '#ef4444';
+                    }
+                    
+                    const sl = data.active_trade.stop_loss;
+                    const slFormatted = sl ? sl.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : 'N/A';
+                    setInnerText('trade-stop', `Trava Stop: $${slFormatted}`);
+                } else {
+                    setInnerText('trade-asset', 'Nenhuma Operação em Andamento');
+                    setInnerText('trade-prices', 'Aguardando autorização dos 7 Filtros de Segurança');
+                    setInnerText('trade-profit', '0.00%');
+                    if (profitEl) profitEl.style.color = 'var(--text-muted)';
+                    setInnerText('trade-stop', 'Trava Stop: --');
                 }
 
                 // Atualiza Seletor de Risco
