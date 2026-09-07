@@ -548,6 +548,77 @@
                             </tbody>
                         </table>
                     </div>
+                <!-- SEÇÃO FORWARD OOS PROSPECTIVO (EARLY_PRUNE_V1 CONGELADA) -->
+            <div style="margin-top: 30px; background: rgba(16, 185, 129, 0.05); border: 1.5px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0;">🎯 FORWARD OOS — Validação Prospectiva (EARLY_PRUNE_V1 Congelada)</h3>
+                            <span style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">100% INALTERADA</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px;">
+                            Execução em nuvem 24/7 (Render) independente do computador local. Fronteira Prospectiva: a partir de <strong>2026-09-08</strong>.
+                        </p>
+                    </div>
+                    <span id="oos-status-badge" style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;">🟢 FORWARD OOS ATIVO EM NUVEM</span>
+                </div>
+
+                <!-- BANNER DE REGRAS CONGELADAS -->
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); padding: 12px 16px; border-radius: 12px; font-size: 0.78rem; display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; color: var(--text-secondary);">
+                    <div><strong style="color: #fff;">Regra Early Prune:</strong> MFE nos 3 primeiros dias &lt; +1.0% → Saída Abertura Dia 4</div>
+                    <div><strong style="color: #fff;">Stop Loss:</strong> 2.0x ATR 14</div>
+                    <div><strong style="color: #fff;">Sizing:</strong> $333,33 USD</div>
+                    <div><strong style="color: #fff;">Taxas:</strong> 0.15% total</div>
+                    <div><strong style="color: #fff;">Último Candle Processado:</strong> <span id="oos-last-candle" style="color: var(--accent-blue); font-weight: 700;">2026-09-07</span></div>
+                    <div><strong style="color: #fff;">Heartbeat Nuvem:</strong> <span id="oos-heartbeat" style="color: var(--accent-green);">Ativo</span></div>
+                </div>
+
+                <!-- CARDS DE MÉTRICAS FORWARD OOS -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">CAPITAL PROSPECTIVO</div>
+                        <div style="font-size: 1.4rem; font-weight: 800; color: #fff;" id="oos-capital">$3,000.00</div>
+                        <div style="font-size: 0.7rem; color: var(--accent-green);" id="oos-return">+0.00% Retorno</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">PROFIT FACTOR OOS</div>
+                        <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-blue);" id="oos-pf">1.00x</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary);">Validação Inicial</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">WIN RATE PROSPECTIVO</div>
+                        <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-purple);" id="oos-winrate">0.0%</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary);" id="oos-wins-losses">0 Vitórias / 0 Perdas</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">TOTAL DE TRADES OOS</div>
+                        <div style="font-size: 1.4rem; font-weight: 800; color: #fff;" id="oos-total-trades">0</div>
+                        <div style="font-size: 0.7rem; color: var(--accent-green);" id="oos-open-positions">0 Posições Abertas</div>
+                    </div>
+                </div>
+
+                <!-- TABELA DE TRADES PROSPECTIVOS -->
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px;">
+                                <th style="padding: 10px 14px;"># Trade ID</th>
+                                <th style="padding: 10px 14px;">Ativo</th>
+                                <th style="padding: 10px 14px;">Entrada OOS</th>
+                                <th style="padding: 10px 14px;">Saída OOS</th>
+                                <th style="padding: 10px 14px;">Preço Compra</th>
+                                <th style="padding: 10px 14px;">Preço Saída</th>
+                                <th style="padding: 10px 14px;">Early Prune?</th>
+                                <th style="padding: 10px 14px;">Motivo Saída</th>
+                                <th style="padding: 10px 14px; text-align: right;">Resultado OOS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="oos-trades-table-body">
+                            <tr>
+                                <td colspan="9" style="padding: 16px; text-align: center; color: var(--text-muted);">Aguardando novos candles diários para geração de sinais prospectivos OOS...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -818,6 +889,90 @@
             } catch (err) {}
         }
 
+        // Busca Dados do Forward OOS (EARLY_PRUNE_V1 Congelada)
+        async function fetchForwardOOS() {
+            try {
+                const res = await fetch(`${API_URL}/forward-oos`);
+                const data = await res.json();
+
+                const setInnerText = (id, text) => {
+                    const el = document.getElementById(id);
+                    if (el && text !== undefined && text !== null) el.innerText = text;
+                };
+
+                if (data.status) setInnerText('oos-status-badge', `🟢 ${data.status}`);
+                if (data.last_processed_date_1d) setInnerText('oos-last-candle', data.last_processed_date_1d);
+                if (data.last_heartbeat) setInnerText('oos-heartbeat', data.last_heartbeat);
+
+                const cap = data.capital_current !== undefined ? data.capital_current : 3000.0;
+                setInnerText('oos-capital', `$${cap.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+
+                const metrics = data.metrics || {};
+                const totRet = metrics.total_return_pct !== undefined ? metrics.total_return_pct : 0.0;
+                setInnerText('oos-return', `${totRet >= 0 ? '+' : ''}${totRet.toFixed(2)}% Retorno`);
+                setInnerText('oos-pf', `${(metrics.profit_factor || 1.0).toFixed(2)}x`);
+                setInnerText('oos-winrate', `${(metrics.win_rate_pct || 0.0).toFixed(1)}%`);
+                setInnerText('oos-wins-losses', `${metrics.wins || 0} Vitórias / ${metrics.losses || 0} Perdas`);
+                setInnerText('oos-total-trades', `${metrics.total_trades || 0}`);
+
+                const openPos = data.open_positions || [];
+                setInnerText('oos-open-positions', `${openPos.length} Posição(ões) Aberta(s)`);
+
+                const tbody = document.getElementById('oos-trades-table-body');
+                const closed = data.closed_trades || [];
+
+                if (closed.length === 0 && openPos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="padding: 16px; text-align: center; color: var(--text-muted);">Aguardando novos candles diários para geração de sinais prospectivos OOS...</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+
+                // Exibir Posições Abertas no topo
+                openPos.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+                    tr.style.background = 'rgba(59, 130, 246, 0.05)';
+                    tr.innerHTML = `
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--accent-blue);">EM ABERTO</td>
+                        <td style="padding: 10px 14px; font-weight: 600; color: #fff;">${p.symbol}</td>
+                        <td style="padding: 10px 14px;">${p.entry_date}</td>
+                        <td style="padding: 10px 14px; color: var(--accent-blue); font-weight: 700;">Dia ${p.days_in_trade} em andamento</td>
+                        <td style="padding: 10px 14px;">$${p.entry_price.toLocaleString()}</td>
+                        <td style="padding: 10px 14px;">$${p.entry_price.toLocaleString()} (MFE: ${p.mfe_max_pct}%)</td>
+                        <td style="padding: 10px 14px;">${p.early_prune_pending ? '⚡ PENDENTE (Dia 4 Open)' : 'NÃO'}</td>
+                        <td style="padding: 10px 14px;">Acompanhando MFE...</td>
+                        <td style="padding: 10px 14px; text-align: right; font-weight: 700; color: var(--accent-blue);">EM ANDAMENTO</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Exibir Trades Encerrados
+                closed.forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+                    const color = t.pnl_pct >= 0 ? '#10b981' : '#ef4444';
+                    const pruneLabel = t.early_prune_triggered ? `<span style="color: #f59e0b; font-weight: 700;">SIM (Saída D4 Open)</span>` : 'NÃO';
+
+                    tr.innerHTML = `
+                        <td style="padding: 10px 14px; font-weight: 700;">#${t.trade_id}</td>
+                        <td style="padding: 10px 14px; font-weight: 600; color: #fff;">${t.symbol}</td>
+                        <td style="padding: 10px 14px;">${t.entry_date}</td>
+                        <td style="padding: 10px 14px;">${t.exit_date}</td>
+                        <td style="padding: 10px 14px;">$${t.entry_price.toLocaleString()}</td>
+                        <td style="padding: 10px 14px;">$${t.exit_price.toLocaleString()}</td>
+                        <td style="padding: 10px 14px;">${pruneLabel}</td>
+                        <td style="padding: 10px 14px;">${t.exit_reason}</td>
+                        <td style="padding: 10px 14px; text-align: right; font-weight: 700; color: ${color};">${t.pnl_pct >= 0 ? '+' : ''}${t.pnl_pct.toFixed(2)}% ($${t.pnl_usd.toFixed(2)})</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.log('Erro ao buscar Forward OOS:', err);
+            }
+        }
+
         // Busca Gráfico
         async function fetchChart() {
             try {
@@ -856,6 +1011,7 @@
             fetchStatus();
             fetchLogs();
             fetchPaperTrades();
+            fetchForwardOOS();
             fetchTrades();
         }, 5000);
 
@@ -864,6 +1020,7 @@
         fetchLogs();
         fetchChart();
         fetchPaperTrades();
+        fetchForwardOOS();
         fetchTrades();
     </script>
 </body>
