@@ -5,12 +5,12 @@
     "exit_time": "EM ANDAMENTO",
     "symbol": "BTC-USD",
     "entry_price": 80819.42,
-    "exit_price": 78817.49,
+    "exit_price": 80819.42,
     "type": "🟢 COMPRA EM TENDÊNCIA (LIVE)",
     "stop_loss": 76778.45,
     "take_profit": 87520.87,
-    "pnl_pct": -2.58,
-    "pnl_usd": -25.77,
+    "pnl_pct": 0.0,
+    "pnl_usd": 0.0,
     "status": "OPEN"
   }
 ]

@@ -14,19 +14,19 @@ if hasattr(sys.stdout, 'reconfigure'):
         pass
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from src.notifier import notifier
-from src.config import INITIAL_CAPITAL
-from src.live_feeder import LiveMarketFeeder
-from src.trade_auditor import get_audited_trade_history
-from src.sentiment_engine import fetch_crypto_sentiment
-from src.execution_engine import LiveExecutionEngine
-from src.monte_carlo import run_monte_carlo_simulation
-from src.predictive_engine import calculate_predictive_projection
-from src.validation_matrix import evaluate_safety_matrix
-from src.adaptive_ai import determine_adaptive_mode
-from src.cross_asset import analyze_cross_asset_rotation
-from src.bybit_connector import bybit_ai_connector
-from src.telegram_bot import telegram_notifier
+from src.core.notifier import notifier
+from src.core.config import INITIAL_CAPITAL
+from src.core.live_feeder import LiveMarketFeeder
+from src.audits.trade_auditor import get_audited_trade_history
+from src.core.sentiment_engine import fetch_crypto_sentiment
+from src.core.execution_engine import LiveExecutionEngine
+from src.engines.monte_carlo import run_monte_carlo_simulation
+from src.engines.predictive_engine import calculate_predictive_projection
+from src.core.validation_matrix import evaluate_safety_matrix
+from src.engines.adaptive_ai import determine_adaptive_mode
+from src.engines.cross_asset import analyze_cross_asset_rotation
+from src.core.bybit_connector import bybit_ai_connector
+from src.core.telegram_bot import telegram_notifier
 
 live_feeder = LiveMarketFeeder()
 execution_engine = LiveExecutionEngine()
@@ -104,7 +104,7 @@ class APIHandler(BaseHTTPRequestHandler):
             bybit_balance = bybit_ai_connector.get_bybit_usdt_balance()
             clock_info = bybit_ai_connector.verify_clock_sync()
             
-            from src.paper_trading import paper_trading_engine
+            from src.core.paper_trading import paper_trading_engine
             open_trades = [t for t in paper_trading_engine.get_trades() if t.get('status') == 'OPEN']
             if open_trades:
                 top_open = open_trades[0]
@@ -138,8 +138,8 @@ class APIHandler(BaseHTTPRequestHandler):
             else:
                 active_trade_data = None
 
-            from src.price_action import analyze_price_action
-            from src.probability_calculator import calculate_trade_probability
+            from src.core.price_action import analyze_price_action
+            from src.core.probability_calculator import calculate_trade_probability
 
             pa_analysis = analyze_price_action(btc_df_1d) if btc_df_1d is not None and not btc_df_1d.empty else {"pattern_name": "ROMPIMENTO DE CANAL DONCHIAN (30d - Calibrado)"}
             prob_analysis = calculate_trade_probability(btc_df_1d)
@@ -185,16 +185,16 @@ class APIHandler(BaseHTTPRequestHandler):
             self._respond_json(response_data)
             
         elif req_path == '/api/paper-trades':
-            from src.paper_trading import get_live_paper_trades
+            from src.core.paper_trading import get_live_paper_trades
             self._respond_json(get_live_paper_trades())
 
         elif req_path == '/api/forward-oos':
-            from src.forward_oos_cloud_engine import forward_oos_cloud_engine
+            from src.engines.forward_oos_cloud_engine import forward_oos_cloud_engine
             self._respond_json(forward_oos_cloud_engine.get_full_state())
 
         elif req_path in ['/api/forward-oos-futures', '/forward-oos-futures']:
             try:
-                from src.forward_oos_futures_cloud_engine import forward_oos_futures_cloud_engine
+                from src.engines.forward_oos_futures_cloud_engine import forward_oos_futures_cloud_engine
                 self._respond_json(forward_oos_futures_cloud_engine.get_full_state())
             except Exception as e:
                 self._respond_json({"error": f"Erro no motor Futures OOS: {e}"}, status=500)
@@ -237,7 +237,7 @@ class APIHandler(BaseHTTPRequestHandler):
         else:
             self._respond_json({"error": "Rota não encontrada"}, status=404)
 
-from src.paper_trading import paper_trading_engine, get_live_paper_trades
+from src.core.paper_trading import paper_trading_engine, get_live_paper_trades
 import urllib.request
 import threading
 import time
@@ -270,11 +270,11 @@ def run_server(port=None):
     paper_trading_engine.start_background_loop(interval_seconds=30)
     
     # Inicia o motor de Validação Prospectiva Forward OOS (EARLY_PRUNE_V1 Congelada Spot)
-    from src.forward_oos_cloud_engine import forward_oos_cloud_engine
+    from src.engines.forward_oos_cloud_engine import forward_oos_cloud_engine
     forward_oos_cloud_engine.start_background_loop(interval_seconds=900)
     
     # Inicia o motor de Validação Prospectiva Forward OOS Futuros Perpétuos (1.5x)
-    from src.forward_oos_futures_cloud_engine import forward_oos_futures_cloud_engine
+    from src.engines.forward_oos_futures_cloud_engine import forward_oos_futures_cloud_engine
     forward_oos_futures_cloud_engine.start_background_loop(interval_seconds=900)
     
     # Inicia o auto-ping contra hibernação do Render

@@ -1,0 +1,646 @@
+{
+  "status": "FORWARD OOS FUTUROS 24/7 ATIVO (4 CARTEIRAS)",
+  "candidate_id": "EARLY_PRUNE_FUTURES_V1",
+  "signal_source": "100% DERIVADO DA EARLY_PRUNE_V1 SPOT (forward_oos_state.json)",
+  "start_date_oos": "2026-09-08",
+  "start_timestamp_utc": "2026-09-08T00:00:00Z",
+  "last_processed_date_1d": "2026-09-08",
+  "last_heartbeat": "2026-09-08 10:52:35 UTC",
+  "processed_spot_signal_ids": [
+    "SPOT_SIG_BTC-USD_2026-09-08",
+    "SPOT_SIG_ETH-USD_2026-09-15",
+    "SPOT_SIG_SOL-USD_2026-09-20"
+  ],
+  "portfolios": {
+    "Portfolio A (Perp 1.0x)": {
+      "name": "Portfolio A (Perp 1.0x)",
+      "leverage": 1.0,
+      "capital_initial": 3000.0,
+      "capital_current": 3032.77,
+      "open_positions": [
+        {
+          "id": "FUT_Portfolio A (Perp 1.0x)_SPOT_SIG_ETH-USD_2026-09-15",
+          "futures_trade_id": "FUT_Portfolio A (Perp 1.0x)_SPOT_SIG_ETH-USD_2026-09-15",
+          "spot_signal_id": "SPOT_SIG_ETH-USD_2026-09-15",
+          "symbol": "ETH-USD",
+          "leverage": 1.0,
+          "entry_date": "2026-09-15",
+          "entry_timestamp_ms": 1788806400000,
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 3000.0,
+          "futures_entry_price_raw": 3000.0,
+          "futures_entry_price": 3000.6,
+          "spot_sl_trigger_price": 2800.0,
+          "liquidation_price": 0.0,
+          "margin_usd": 333.33,
+          "notional_usd": 333.33,
+          "contracts_qty": 0.1110877824435113,
+          "entry_fee_usd": 0.18,
+          "days_in_trade": 1,
+          "mfe_d1_pct": 0.0,
+          "mfe_d2_pct": 0.0,
+          "mfe_d3_pct": 0.0,
+          "mfe_max_pct": 0.0,
+          "intraday_resolution_note": "Monitoramento intraday real (15m/60m) via klines perpétuas Bybit V5.",
+          "early_prune_pending": false
+        },
+        {
+          "id": "FUT_Portfolio A (Perp 1.0x)_SPOT_SIG_SOL-USD_2026-09-20",
+          "futures_trade_id": "FUT_Portfolio A (Perp 1.0x)_SPOT_SIG_SOL-USD_2026-09-20",
+          "spot_signal_id": "SPOT_SIG_SOL-USD_2026-09-20",
+          "symbol": "SOL-USD",
+          "leverage": 1.0,
+          "entry_date": "2026-09-20",
+          "entry_timestamp_ms": 1788806400000,
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 135.0,
+          "futures_entry_price_raw": 135.0,
+          "futures_entry_price": 135.03,
+          "spot_sl_trigger_price": 125.0,
+          "liquidation_price": 0.0,
+          "margin_usd": 333.33,
+          "notional_usd": 333.33,
+          "contracts_qty": 2.4685625416574095,
+          "entry_fee_usd": 0.18,
+          "days_in_trade": 1,
+          "mfe_d1_pct": 0.0,
+          "mfe_d2_pct": 0.0,
+          "mfe_d3_pct": 0.0,
+          "mfe_max_pct": 0.0,
+          "intraday_resolution_note": "Monitoramento intraday real (15m/60m) via klines perpétuas Bybit V5.",
+          "early_prune_pending": false
+        }
+      ],
+      "closed_trades": [
+        {
+          "futures_trade_id": "FUT_Portfolio A (Perp 1.0x)_SPOT_SIG_BTC-USD_2026-09-08",
+          "spot_signal_id": "SPOT_SIG_BTC-USD_2026-09-08",
+          "symbol": "BTC-USD",
+          "leverage": 1.0,
+          "entry_date": "2026-09-08",
+          "exit_date": "2026-09-08",
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "exit_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 80000.0,
+          "futures_entry_price_raw": 80000.0,
+          "futures_entry_price": 80016.0,
+          "futures_exit_price_raw": 88000.0,
+          "futures_exit_price": 87982.4,
+          "stop_loss": 76000.0,
+          "liquidation_price": 0.0,
+          "is_liquidated": false,
+          "days_in_trade": 1,
+          "margin_usd": 333.33,
+          "notional_usd": 333.33,
+          "exit_reason": "Donchian Exit (10d Low)",
+          "fees_usd": 0.38,
+          "real_funding_detail": {
+            "events_detail": [
+              {
+                "funding_event_timestamp": "2026-09-08 08:00:00 UTC",
+                "funding_rate": 0.0001,
+                "position_notional": 333.33,
+                "funding_paid_received": -0.03
+              }
+            ],
+            "funding_events_count": 1,
+            "funding_paid_usd": 0.03,
+            "funding_received_usd": 0.0,
+            "funding_net_usd": -0.03
+          },
+          "funding_net_usd": -0.03,
+          "net_pnl_usd": 32.77,
+          "net_pnl_pct": 9.83
+        }
+      ],
+      "daily_equity_series": [
+        {
+          "date": "2026-09-07",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
+        },
+        {
+          "date": "2026-09-08",
+          "equity_usd": 3032.77,
+          "pnl_pct": 1.09
+        }
+      ],
+      "metrics": {
+        "total_trades": 1,
+        "wins": 1,
+        "losses": 0,
+        "win_rate_pct": 100.0,
+        "profit_factor": 32.77,
+        "total_pnl_usd": 32.77,
+        "total_return_pct": 1.09,
+        "max_drawdown_pct": 0.0,
+        "funding_total_usd": -0.03,
+        "liquidations_count": 0
+      }
+    },
+    "Portfolio B (Perp 1.25x)": {
+      "name": "Portfolio B (Perp 1.25x)",
+      "leverage": 1.25,
+      "capital_initial": 3000.0,
+      "capital_current": 3040.97,
+      "open_positions": [
+        {
+          "id": "FUT_Portfolio B (Perp 1.25x)_SPOT_SIG_ETH-USD_2026-09-15",
+          "futures_trade_id": "FUT_Portfolio B (Perp 1.25x)_SPOT_SIG_ETH-USD_2026-09-15",
+          "spot_signal_id": "SPOT_SIG_ETH-USD_2026-09-15",
+          "symbol": "ETH-USD",
+          "leverage": 1.25,
+          "entry_date": "2026-09-15",
+          "entry_timestamp_ms": 1788806400000,
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 3000.0,
+          "futures_entry_price_raw": 3000.0,
+          "futures_entry_price": 3000.6,
+          "spot_sl_trigger_price": 2800.0,
+          "liquidation_price": 623.94,
+          "margin_usd": 333.33,
+          "notional_usd": 416.66249999999997,
+          "contracts_qty": 0.13885972805438912,
+          "entry_fee_usd": 0.23,
+          "days_in_trade": 1,
+          "mfe_d1_pct": 0.0,
+          "mfe_d2_pct": 0.0,
+          "mfe_d3_pct": 0.0,
+          "mfe_max_pct": 0.0,
+          "intraday_resolution_note": "Monitoramento intraday real (15m/60m) via klines perpétuas Bybit V5.",
+          "early_prune_pending": false
+        },
+        {
+          "id": "FUT_Portfolio B (Perp 1.25x)_SPOT_SIG_SOL-USD_2026-09-20",
+          "futures_trade_id": "FUT_Portfolio B (Perp 1.25x)_SPOT_SIG_SOL-USD_2026-09-20",
+          "spot_signal_id": "SPOT_SIG_SOL-USD_2026-09-20",
+          "symbol": "SOL-USD",
+          "leverage": 1.25,
+          "entry_date": "2026-09-20",
+          "entry_timestamp_ms": 1788806400000,
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 135.0,
+          "futures_entry_price_raw": 135.0,
+          "futures_entry_price": 135.03,
+          "spot_sl_trigger_price": 125.0,
+          "liquidation_price": 28.42,
+          "margin_usd": 333.33,
+          "notional_usd": 416.66249999999997,
+          "contracts_qty": 3.0857031770717613,
+          "entry_fee_usd": 0.23,
+          "days_in_trade": 1,
+          "mfe_d1_pct": 0.0,
+          "mfe_d2_pct": 0.0,
+          "mfe_d3_pct": 0.0,
+          "mfe_max_pct": 0.0,
+          "intraday_resolution_note": "Monitoramento intraday real (15m/60m) via klines perpétuas Bybit V5.",
+          "early_prune_pending": false
+        }
+      ],
+      "closed_trades": [
+        {
+          "futures_trade_id": "FUT_Portfolio B (Perp 1.25x)_SPOT_SIG_BTC-USD_2026-09-08",
+          "spot_signal_id": "SPOT_SIG_BTC-USD_2026-09-08",
+          "symbol": "BTC-USD",
+          "leverage": 1.25,
+          "entry_date": "2026-09-08",
+          "exit_date": "2026-09-08",
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "exit_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 80000.0,
+          "futures_entry_price_raw": 80000.0,
+          "futures_entry_price": 80016.0,
+          "futures_exit_price_raw": 88000.0,
+          "futures_exit_price": 87982.4,
+          "stop_loss": 76000.0,
+          "liquidation_price": 16438.49,
+          "is_liquidated": false,
+          "days_in_trade": 1,
+          "margin_usd": 333.33,
+          "notional_usd": 416.66249999999997,
+          "exit_reason": "Donchian Exit (10d Low)",
+          "fees_usd": 0.48,
+          "real_funding_detail": {
+            "events_detail": [
+              {
+                "funding_event_timestamp": "2026-09-08 08:00:00 UTC",
+                "funding_rate": 0.0001,
+                "position_notional": 416.66249999999997,
+                "funding_paid_received": -0.03
+              }
+            ],
+            "funding_events_count": 1,
+            "funding_paid_usd": 0.03,
+            "funding_received_usd": 0.0,
+            "funding_net_usd": -0.03
+          },
+          "funding_net_usd": -0.03,
+          "net_pnl_usd": 40.97,
+          "net_pnl_pct": 12.29
+        }
+      ],
+      "daily_equity_series": [
+        {
+          "date": "2026-09-07",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
+        },
+        {
+          "date": "2026-09-08",
+          "equity_usd": 3040.97,
+          "pnl_pct": 1.37
+        }
+      ],
+      "metrics": {
+        "total_trades": 1,
+        "wins": 1,
+        "losses": 0,
+        "win_rate_pct": 100.0,
+        "profit_factor": 40.97,
+        "total_pnl_usd": 40.97,
+        "total_return_pct": 1.37,
+        "max_drawdown_pct": 0.0,
+        "funding_total_usd": -0.03,
+        "liquidations_count": 0
+      }
+    },
+    "Portfolio C (Perp 1.5x)": {
+      "name": "Portfolio C (Perp 1.5x)",
+      "leverage": 1.5,
+      "capital_initial": 3000.0,
+      "capital_current": 3049.18,
+      "open_positions": [
+        {
+          "id": "FUT_Portfolio C (Perp 1.5x)_SPOT_SIG_ETH-USD_2026-09-15",
+          "futures_trade_id": "FUT_Portfolio C (Perp 1.5x)_SPOT_SIG_ETH-USD_2026-09-15",
+          "spot_signal_id": "SPOT_SIG_ETH-USD_2026-09-15",
+          "symbol": "ETH-USD",
+          "leverage": 1.5,
+          "entry_date": "2026-09-15",
+          "entry_timestamp_ms": 1788806400000,
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 3000.0,
+          "futures_entry_price_raw": 3000.0,
+          "futures_entry_price": 3000.6,
+          "spot_sl_trigger_price": 2800.0,
+          "liquidation_price": 1023.8,
+          "margin_usd": 333.33,
+          "notional_usd": 499.995,
+          "contracts_qty": 0.16663167366526696,
+          "entry_fee_usd": 0.27,
+          "days_in_trade": 1,
+          "mfe_d1_pct": 0.0,
+          "mfe_d2_pct": 0.0,
+          "mfe_d3_pct": 0.0,
+          "mfe_max_pct": 0.0,
+          "intraday_resolution_note": "Monitoramento intraday real (15m/60m) via klines perpétuas Bybit V5.",
+          "early_prune_pending": false
+        },
+        {
+          "id": "FUT_Portfolio C (Perp 1.5x)_SPOT_SIG_SOL-USD_2026-09-20",
+          "futures_trade_id": "FUT_Portfolio C (Perp 1.5x)_SPOT_SIG_SOL-USD_2026-09-20",
+          "spot_signal_id": "SPOT_SIG_SOL-USD_2026-09-20",
+          "symbol": "SOL-USD",
+          "leverage": 1.5,
+          "entry_date": "2026-09-20",
+          "entry_timestamp_ms": 1788806400000,
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 135.0,
+          "futures_entry_price_raw": 135.0,
+          "futures_entry_price": 135.03,
+          "spot_sl_trigger_price": 125.0,
+          "liquidation_price": 46.41,
+          "margin_usd": 333.33,
+          "notional_usd": 499.995,
+          "contracts_qty": 3.702843812486114,
+          "entry_fee_usd": 0.27,
+          "days_in_trade": 1,
+          "mfe_d1_pct": 0.0,
+          "mfe_d2_pct": 0.0,
+          "mfe_d3_pct": 0.0,
+          "mfe_max_pct": 0.0,
+          "intraday_resolution_note": "Monitoramento intraday real (15m/60m) via klines perpétuas Bybit V5.",
+          "early_prune_pending": false
+        }
+      ],
+      "closed_trades": [
+        {
+          "futures_trade_id": "FUT_Portfolio C (Perp 1.5x)_SPOT_SIG_BTC-USD_2026-09-08",
+          "spot_signal_id": "SPOT_SIG_BTC-USD_2026-09-08",
+          "symbol": "BTC-USD",
+          "leverage": 1.5,
+          "entry_date": "2026-09-08",
+          "exit_date": "2026-09-08",
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "exit_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 80000.0,
+          "futures_entry_price_raw": 80000.0,
+          "futures_entry_price": 80016.0,
+          "futures_exit_price_raw": 88000.0,
+          "futures_exit_price": 87982.4,
+          "stop_loss": 76000.0,
+          "liquidation_price": 27101.42,
+          "is_liquidated": false,
+          "days_in_trade": 1,
+          "margin_usd": 333.33,
+          "notional_usd": 499.995,
+          "exit_reason": "Donchian Exit (10d Low)",
+          "fees_usd": 0.57,
+          "real_funding_detail": {
+            "events_detail": [
+              {
+                "funding_event_timestamp": "2026-09-08 08:00:00 UTC",
+                "funding_rate": 0.0001,
+                "position_notional": 499.995,
+                "funding_paid_received": -0.03
+              }
+            ],
+            "funding_events_count": 1,
+            "funding_paid_usd": 0.03,
+            "funding_received_usd": 0.0,
+            "funding_net_usd": -0.03
+          },
+          "funding_net_usd": -0.03,
+          "net_pnl_usd": 49.18,
+          "net_pnl_pct": 14.75
+        }
+      ],
+      "daily_equity_series": [
+        {
+          "date": "2026-09-07",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
+        },
+        {
+          "date": "2026-09-08",
+          "equity_usd": 3049.18,
+          "pnl_pct": 1.64
+        }
+      ],
+      "metrics": {
+        "total_trades": 1,
+        "wins": 1,
+        "losses": 0,
+        "win_rate_pct": 100.0,
+        "profit_factor": 49.18,
+        "total_pnl_usd": 49.18,
+        "total_return_pct": 1.64,
+        "max_drawdown_pct": 0.0,
+        "funding_total_usd": -0.03,
+        "liquidations_count": 0
+      }
+    },
+    "Portfolio D (Perp 2.0x)": {
+      "name": "Portfolio D (Perp 2.0x)",
+      "leverage": 2.0,
+      "capital_initial": 3000.0,
+      "capital_current": 3065.57,
+      "open_positions": [
+        {
+          "id": "FUT_Portfolio D (Perp 2.0x)_SPOT_SIG_ETH-USD_2026-09-15",
+          "futures_trade_id": "FUT_Portfolio D (Perp 2.0x)_SPOT_SIG_ETH-USD_2026-09-15",
+          "spot_signal_id": "SPOT_SIG_ETH-USD_2026-09-15",
+          "symbol": "ETH-USD",
+          "leverage": 2.0,
+          "entry_date": "2026-09-15",
+          "entry_timestamp_ms": 1788806400000,
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 3000.0,
+          "futures_entry_price_raw": 3000.0,
+          "futures_entry_price": 3000.6,
+          "spot_sl_trigger_price": 2800.0,
+          "liquidation_price": 1523.63,
+          "margin_usd": 333.33,
+          "notional_usd": 666.66,
+          "contracts_qty": 0.2221755648870226,
+          "entry_fee_usd": 0.37,
+          "days_in_trade": 1,
+          "mfe_d1_pct": 0.0,
+          "mfe_d2_pct": 0.0,
+          "mfe_d3_pct": 0.0,
+          "mfe_max_pct": 0.0,
+          "intraday_resolution_note": "Monitoramento intraday real (15m/60m) via klines perpétuas Bybit V5.",
+          "early_prune_pending": false
+        },
+        {
+          "id": "FUT_Portfolio D (Perp 2.0x)_SPOT_SIG_SOL-USD_2026-09-20",
+          "futures_trade_id": "FUT_Portfolio D (Perp 2.0x)_SPOT_SIG_SOL-USD_2026-09-20",
+          "spot_signal_id": "SPOT_SIG_SOL-USD_2026-09-20",
+          "symbol": "SOL-USD",
+          "leverage": 2.0,
+          "entry_date": "2026-09-20",
+          "entry_timestamp_ms": 1788806400000,
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 135.0,
+          "futures_entry_price_raw": 135.0,
+          "futures_entry_price": 135.03,
+          "spot_sl_trigger_price": 125.0,
+          "liquidation_price": 68.9,
+          "margin_usd": 333.33,
+          "notional_usd": 666.66,
+          "contracts_qty": 4.937125083314819,
+          "entry_fee_usd": 0.37,
+          "days_in_trade": 1,
+          "mfe_d1_pct": 0.0,
+          "mfe_d2_pct": 0.0,
+          "mfe_d3_pct": 0.0,
+          "mfe_max_pct": 0.0,
+          "intraday_resolution_note": "Monitoramento intraday real (15m/60m) via klines perpétuas Bybit V5.",
+          "early_prune_pending": false
+        }
+      ],
+      "closed_trades": [
+        {
+          "futures_trade_id": "FUT_Portfolio D (Perp 2.0x)_SPOT_SIG_BTC-USD_2026-09-08",
+          "spot_signal_id": "SPOT_SIG_BTC-USD_2026-09-08",
+          "symbol": "BTC-USD",
+          "leverage": 2.0,
+          "entry_date": "2026-09-08",
+          "exit_date": "2026-09-08",
+          "entry_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "exit_timestamp_str": "2026-09-08 00:00:00 UTC",
+          "spot_entry_reference": 80000.0,
+          "futures_entry_price_raw": 80000.0,
+          "futures_entry_price": 80016.0,
+          "futures_exit_price_raw": 88000.0,
+          "futures_exit_price": 87982.4,
+          "stop_loss": 76000.0,
+          "liquidation_price": 40430.08,
+          "is_liquidated": false,
+          "days_in_trade": 1,
+          "margin_usd": 333.33,
+          "notional_usd": 666.66,
+          "exit_reason": "Donchian Exit (10d Low)",
+          "fees_usd": 0.77,
+          "real_funding_detail": {
+            "events_detail": [
+              {
+                "funding_event_timestamp": "2026-09-08 08:00:00 UTC",
+                "funding_rate": 0.0001,
+                "position_notional": 666.66,
+                "funding_paid_received": -0.03
+              }
+            ],
+            "funding_events_count": 1,
+            "funding_paid_usd": 0.03,
+            "funding_received_usd": 0.0,
+            "funding_net_usd": -0.03
+          },
+          "funding_net_usd": -0.03,
+          "net_pnl_usd": 65.57,
+          "net_pnl_pct": 19.67
+        }
+      ],
+      "daily_equity_series": [
+        {
+          "date": "2026-09-07",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
+        },
+        {
+          "date": "2026-09-08",
+          "equity_usd": 3065.57,
+          "pnl_pct": 2.19
+        }
+      ],
+      "metrics": {
+        "total_trades": 1,
+        "wins": 1,
+        "losses": 0,
+        "win_rate_pct": 100.0,
+        "profit_factor": 65.57,
+        "total_pnl_usd": 65.57,
+        "total_return_pct": 2.19,
+        "max_drawdown_pct": 0.0,
+        "funding_total_usd": -0.03,
+        "liquidations_count": 0
+      }
+    }
+  },
+  "execution_logs": [
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "⚡ [Portfolio D (Perp 2.0x)] Trade Encerrado em BTC-USD (FUT_Portfolio D (Perp 2.0x)_SPOT_SIG_BTC-USD_2026-09-08): Donchian Exit (10d Low) | PnL: +19.67% ($+65.57) | Funding Real: $-0.03"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "⚡ [Portfolio C (Perp 1.5x)] Trade Encerrado em BTC-USD (FUT_Portfolio C (Perp 1.5x)_SPOT_SIG_BTC-USD_2026-09-08): Donchian Exit (10d Low) | PnL: +14.75% ($+49.18) | Funding Real: $-0.03"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "⚡ [Portfolio B (Perp 1.25x)] Trade Encerrado em BTC-USD (FUT_Portfolio B (Perp 1.25x)_SPOT_SIG_BTC-USD_2026-09-08): Donchian Exit (10d Low) | PnL: +12.29% ($+40.97) | Funding Real: $-0.03"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "⚡ [Portfolio A (Perp 1.0x)] Trade Encerrado em BTC-USD (FUT_Portfolio A (Perp 1.0x)_SPOT_SIG_BTC-USD_2026-09-08): Donchian Exit (10d Low) | PnL: +9.83% ($+32.77) | Funding Real: $-0.03"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio D (Perp 2.0x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_BTC-USD_2026-09-08 -> FUT_Portfolio D (Perp 2.0x)_SPOT_SIG_BTC-USD_2026-09-08 | Preço Perp: $80,000.00 | Ativo: BTC-USD (2.0x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio C (Perp 1.5x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_BTC-USD_2026-09-08 -> FUT_Portfolio C (Perp 1.5x)_SPOT_SIG_BTC-USD_2026-09-08 | Preço Perp: $80,000.00 | Ativo: BTC-USD (1.5x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio B (Perp 1.25x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_BTC-USD_2026-09-08 -> FUT_Portfolio B (Perp 1.25x)_SPOT_SIG_BTC-USD_2026-09-08 | Preço Perp: $80,000.00 | Ativo: BTC-USD (1.25x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio A (Perp 1.0x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_BTC-USD_2026-09-08 -> FUT_Portfolio A (Perp 1.0x)_SPOT_SIG_BTC-USD_2026-09-08 | Preço Perp: $80,000.00 | Ativo: BTC-USD (1.0x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio D (Perp 2.0x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_SOL-USD_2026-09-20 -> FUT_Portfolio D (Perp 2.0x)_SPOT_SIG_SOL-USD_2026-09-20 | Preço Perp: $135.00 | Ativo: SOL-USD (2.0x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio C (Perp 1.5x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_SOL-USD_2026-09-20 -> FUT_Portfolio C (Perp 1.5x)_SPOT_SIG_SOL-USD_2026-09-20 | Preço Perp: $135.00 | Ativo: SOL-USD (1.5x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio B (Perp 1.25x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_SOL-USD_2026-09-20 -> FUT_Portfolio B (Perp 1.25x)_SPOT_SIG_SOL-USD_2026-09-20 | Preço Perp: $135.00 | Ativo: SOL-USD (1.25x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio A (Perp 1.0x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_SOL-USD_2026-09-20 -> FUT_Portfolio A (Perp 1.0x)_SPOT_SIG_SOL-USD_2026-09-20 | Preço Perp: $135.00 | Ativo: SOL-USD (1.0x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio D (Perp 2.0x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_ETH-USD_2026-09-15 -> FUT_Portfolio D (Perp 2.0x)_SPOT_SIG_ETH-USD_2026-09-15 | Preço Perp: $3,000.00 | Ativo: ETH-USD (2.0x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio C (Perp 1.5x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_ETH-USD_2026-09-15 -> FUT_Portfolio C (Perp 1.5x)_SPOT_SIG_ETH-USD_2026-09-15 | Preço Perp: $3,000.00 | Ativo: ETH-USD (1.5x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio B (Perp 1.25x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_ETH-USD_2026-09-15 -> FUT_Portfolio B (Perp 1.25x)_SPOT_SIG_ETH-USD_2026-09-15 | Preço Perp: $3,000.00 | Ativo: ETH-USD (1.25x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "🚀 [Portfolio A (Perp 1.0x)] VÍNCULO DIRETO SPOT->FUTURES: SPOT_SIG_ETH-USD_2026-09-15 -> FUT_Portfolio A (Perp 1.0x)_SPOT_SIG_ETH-USD_2026-09-15 | Preço Perp: $3,000.00 | Ativo: ETH-USD (1.0x)"
+    },
+    {
+      "timestamp": "2026-09-08 10:52:35 UTC",
+      "level": "INFO",
+      "message": "⚡ Forward OOS Futuros 24/7 (4 Carteiras Virtuais 1.0x a 2.0x) acoplado diretamente ao Spot OOS."
+    }
+  ],
+  "frozen_params": {
+    "strategy_name": "EARLY_PRUNE_FUTURES_V1",
+    "instrument": "Bybit Linear USDT Perpetual Futures",
+    "portfolios": [
+      {
+        "name": "Portfolio A (Perp 1.0x)",
+        "leverage": 1.0
+      },
+      {
+        "name": "Portfolio B (Perp 1.25x)",
+        "leverage": 1.25
+      },
+      {
+        "name": "Portfolio C (Perp 1.5x)",
+        "leverage": 1.5
+      },
+      {
+        "name": "Portfolio D (Perp 2.0x)",
+        "leverage": 2.0
+      }
+    ],
+    "status_label": "FORWARD OOS FUTUROS 24/7 ATIVO (4 CARTEIRAS)",
+    "mfe_threshold_pct": 1.0,
+    "observation_days": 3,
+    "execution_timing": "Day 4 Open",
+    "margin_per_trade_usd": 333.33,
+    "capital_initial_per_portfolio_usd": 3000.0,
+    "slippage_rate": 0.0002,
+    "stop_loss_atr_mult": 2.0,
+    "donchian_entry_period": 30,
+    "donchian_exit_period": 10,
+    "ema_trend_period": 200,
+    "adx_period": 14,
+    "adx_threshold": 20,
+    "vol_sma_period": 20,
+    "in_sample_end_date": "2026-09-07",
+    "oos_start_date": "2026-09-08",
+    "oos_start_timestamp_utc": "2026-09-08T00:00:00Z"
+  }
+}

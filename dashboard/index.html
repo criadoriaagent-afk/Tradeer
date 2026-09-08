@@ -622,32 +622,72 @@
                 </div>
             </div>
 
-            <!-- SEÇÃO FORWARD OOS FUTUROS 24/7 (EARLY_PRUNE_FUTURES_V1 1.5x) -->
+            <!-- SEÇÃO FORWARD OOS FUTUROS 24/7 (EARLY_PRUNE_FUTURES_V1 — 4 CARTEIRAS VIRTUAIS) -->
             <div style="margin-top: 30px; background: rgba(139, 92, 246, 0.05); border: 1.5px solid rgba(139, 92, 246, 0.3); border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0;">⚡ FORWARD OOS FUTUROS 24/7 — Perpétuos 1.5x (EARLY_PRUNE_FUTURES_V1)</h3>
-                            <span style="background: rgba(139, 92, 246, 0.2); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">ALAVANCAGEM 1.5X</span>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0;">⚡ FORWARD OOS FUTUROS 24/7 — 4 Carteiras Virtuais (EARLY_PRUNE_FUTURES_V1)</h3>
+                            <span style="background: rgba(139, 92, 246, 0.2); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">4 ALAVANCAGENS SIMULTÂNEAS</span>
                         </div>
                         <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px;">
-                            Execução 24/7 em nuvem nos contratos perpétuos linear USDT da Bybit. Fronteira Prospectiva: a partir de <strong>2026-09-08</strong>.
+                            Execução 24/7 em nuvem nos contratos perpétuos linear USDT da Bybit. 4 Carteiras espelhadas da EARLY_PRUNE_V1 Spot OOS. Fronteira: a partir de <strong>2026-09-08</strong>.
                         </p>
                     </div>
-                    <span id="fut-status-badge" style="background: rgba(139, 92, 246, 0.2); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;">🟢 FUTUROS 24/7 ATIVO</span>
+                    <span id="fut-status-badge" style="background: rgba(139, 92, 246, 0.2); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;">🟢 FUTUROS 24/7 ATIVO (4 CARTEIRAS)</span>
                 </div>
 
-                <!-- BANNER DE REGRAS DE FUTUROS -->
+                <!-- RESUMO COMPARATIVO DAS 4 CARTEIRAS -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                    <div id="fut-summary-card-a" onclick="selectFuturesPortfolio('Portfolio A (Perp 1.0x)')" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">🛡️ PORTFOLIO A (1.0x)</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: #fff;" id="fut-summary-cap-a">$3,000.00</div>
+                        <div style="font-size: 0.68rem; color: var(--text-secondary);" id="fut-summary-ret-a">+0.00% Retorno</div>
+                    </div>
+                    <div id="fut-summary-card-b" onclick="selectFuturesPortfolio('Portfolio B (Perp 1.25x)')" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">⚖️ PORTFOLIO B (1.25x)</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: #fff;" id="fut-summary-cap-b">$3,000.00</div>
+                        <div style="font-size: 0.68rem; color: var(--text-secondary);" id="fut-summary-ret-b">+0.00% Retorno</div>
+                    </div>
+                    <div id="fut-summary-card-c" onclick="selectFuturesPortfolio('Portfolio C (Perp 1.5x)')" style="background: rgba(139, 92, 246, 0.15); border: 1.5px solid var(--accent-purple); padding: 12px; border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                        <div style="font-size: 0.7rem; color: var(--accent-purple); font-weight: 700;">⚡ PORTFOLIO C (1.5x - Principal)</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: #fff;" id="fut-summary-cap-c">$3,000.00</div>
+                        <div style="font-size: 0.68rem; color: var(--accent-purple);" id="fut-summary-ret-c">+0.00% Retorno</div>
+                    </div>
+                    <div id="fut-summary-card-d" onclick="selectFuturesPortfolio('Portfolio D (Perp 2.0x)')" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">🚀 PORTFOLIO D (2.0x)</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: #fff;" id="fut-summary-cap-d">$3,000.00</div>
+                        <div style="font-size: 0.68rem; color: var(--text-secondary);" id="fut-summary-ret-d">+0.00% Retorno</div>
+                    </div>
+                </div>
+
+                <!-- ABAS DE NAVEGAÇÃO DE FUTUROS -->
+                <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+                    <button id="fut-tab-a" onclick="selectFuturesPortfolio('Portfolio A (Perp 1.0x)')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-secondary); padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer;">
+                        🛡️ Portfolio A (1.0x)
+                    </button>
+                    <button id="fut-tab-b" onclick="selectFuturesPortfolio('Portfolio B (Perp 1.25x)')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-secondary); padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer;">
+                        ⚖️ Portfolio B (1.25x)
+                    </button>
+                    <button id="fut-tab-c" onclick="selectFuturesPortfolio('Portfolio C (Perp 1.5x)')" style="background: var(--accent-purple); border: 1px solid var(--accent-purple); color: #fff; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer;">
+                        ⚡ Portfolio C (1.5x - Principal)
+                    </button>
+                    <button id="fut-tab-d" onclick="selectFuturesPortfolio('Portfolio D (Perp 2.0x)')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-secondary); padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer;">
+                        🚀 Portfolio D (2.0x)
+                    </button>
+                </div>
+
+                <!-- BANNER DE REGRAS E PARÂMETROS DA CARTEIRA SELECIONADA -->
                 <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); padding: 12px 16px; border-radius: 12px; font-size: 0.78rem; display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; color: var(--text-secondary);">
-                    <div><strong style="color: #fff;">Instrumento:</strong> Contratos Perpétuos Linear USDT (Bybit)</div>
-                    <div><strong style="color: #fff;">Alavancagem:</strong> 1.5x Nocional ($500.00 / Trade)</div>
-                    <div><strong style="color: #fff;">Margem por Trade:</strong> $333,33 USD</div>
+                    <div><strong style="color: #fff;">Carteira Ativa:</strong> <span id="fut-active-portfolio-name" style="color: var(--accent-purple); font-weight: 700;">Portfolio C (Perp 1.5x)</span></div>
+                    <div><strong style="color: #fff;">Alavancagem:</strong> <span id="fut-active-leverage" style="color: #fff; font-weight: 700;">1.5x Nocional ($500.00 / Trade)</span></div>
+                    <div><strong style="color: #fff;">Margem por Trade:</strong> <span id="fut-active-margin" style="color: #fff;">$333.33 USD</span></div>
                     <div><strong style="color: #fff;">Early Prune:</strong> MFE D3 &lt; +1.0% → Saída D4 Open</div>
                     <div><strong style="color: #fff;">Último Candle Processado:</strong> <span id="fut-last-candle" style="color: var(--accent-blue); font-weight: 700;">2026-09-07</span></div>
                     <div><strong style="color: #fff;">Heartbeat Nuvem:</strong> <span id="fut-heartbeat" style="color: var(--accent-purple);">Ativo</span></div>
                 </div>
 
-                <!-- CARDS DE MÉTRICAS FORWARD OOS FUTUROS -->
+                <!-- CARDS DE MÉTRICAS DA CARTEIRA SELECIONADA -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
                     <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px;">
                         <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">CAPITAL FUTUROS PROSPECTIVO</div>
@@ -1047,15 +1087,172 @@
             }
         }
 
-        // Busca Gráfico
-        async function fetchChart() {
-            try {
-                const res = await fetch(`${API_URL}/chart`);
-                const dataPoints = await res.json();
-                if (!chartInstance) {
-                    initChart(dataPoints);
+        // Busca Dados do Forward OOS Futuros (4 Carteiras Virtuais 1.0x a 2.0x)
+        let activeFuturesPortfolioKey = "Portfolio C (Perp 1.5x)";
+        let futuresDataCache = null;
+
+        function selectFuturesPortfolio(portfolioKey) {
+            activeFuturesPortfolioKey = portfolioKey;
+            
+            const keyToTabId = {
+                "Portfolio A (Perp 1.0x)": "fut-tab-a",
+                "Portfolio B (Perp 1.25x)": "fut-tab-b",
+                "Portfolio C (Perp 1.5x)": "fut-tab-c",
+                "Portfolio D (Perp 2.0x)": "fut-tab-d"
+            };
+            const keyToCardId = {
+                "Portfolio A (Perp 1.0x)": "fut-summary-card-a",
+                "Portfolio B (Perp 1.25x)": "fut-summary-card-b",
+                "Portfolio C (Perp 1.5x)": "fut-summary-card-c",
+                "Portfolio D (Perp 2.0x)": "fut-summary-card-d"
+            };
+
+            Object.entries(keyToTabId).forEach(([k, tabId]) => {
+                const btn = document.getElementById(tabId);
+                const card = document.getElementById(keyToCardId[k]);
+                if (btn) {
+                    if (k === portfolioKey) {
+                        btn.style.background = 'var(--accent-purple)';
+                        btn.style.border = '1px solid var(--accent-purple)';
+                        btn.style.color = '#fff';
+                    } else {
+                        btn.style.background = 'rgba(255,255,255,0.05)';
+                        btn.style.border = '1px solid var(--card-border)';
+                        btn.style.color = 'var(--text-secondary)';
+                    }
                 }
-            } catch (err) {}
+                if (card) {
+                    if (k === portfolioKey) {
+                        card.style.background = 'rgba(139, 92, 246, 0.15)';
+                        card.style.border = '1.5px solid var(--accent-purple)';
+                    } else {
+                        card.style.background = 'rgba(255,255,255,0.02)';
+                        card.style.border = '1px solid rgba(255,255,255,0.08)';
+                    }
+                }
+            });
+
+            if (futuresDataCache) {
+                renderFuturesUI(futuresDataCache);
+            }
+        }
+
+        async function fetchForwardOOSFutures() {
+            try {
+                const res = await fetch(`${API_URL}/forward-oos-futures`);
+                if (!res.ok) return;
+                const data = await res.json();
+                futuresDataCache = data;
+                renderFuturesUI(data);
+            } catch (err) {
+                console.log('Erro ao buscar Forward OOS Futuros:', err);
+            }
+        }
+
+        function renderFuturesUI(data) {
+            if (!data) return;
+            const setInnerText = (id, text) => {
+                const el = document.getElementById(id);
+                if (el && text !== undefined && text !== null) el.innerText = text;
+            };
+
+            if (data.status) setInnerText('fut-status-badge', `🟢 ${data.status}`);
+            if (data.last_processed_date_1d) setInnerText('fut-last-candle', data.last_processed_date_1d);
+            if (data.last_heartbeat) setInnerText('fut-heartbeat', data.last_heartbeat);
+
+            const portfolios = data.portfolios || {};
+
+            const summaryMap = {
+                "Portfolio A (Perp 1.0x)": { cap: 'fut-summary-cap-a', ret: 'fut-summary-ret-a' },
+                "Portfolio B (Perp 1.25x)": { cap: 'fut-summary-cap-b', ret: 'fut-summary-ret-b' },
+                "Portfolio C (Perp 1.5x)": { cap: 'fut-summary-cap-c', ret: 'fut-summary-ret-c' },
+                "Portfolio D (Perp 2.0x)": { cap: 'fut-summary-cap-d', ret: 'fut-summary-ret-d' }
+            };
+
+            Object.entries(summaryMap).forEach(([k, target]) => {
+                const pObj = portfolios[k];
+                if (pObj) {
+                    const capVal = pObj.capital_current !== undefined ? pObj.capital_current : 3000.0;
+                    setInnerText(target.cap, `$${capVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+                    const retPct = (pObj.metrics && pObj.metrics.total_return_pct !== undefined) ? pObj.metrics.total_return_pct : 0.0;
+                    setInnerText(target.ret, `${retPct >= 0 ? '+' : ''}${retPct.toFixed(2)}% Retorno`);
+                }
+            });
+
+            const activePortfolio = portfolios[activeFuturesPortfolioKey] || portfolios["Portfolio C (Perp 1.5x)"];
+            if (!activePortfolio) return;
+
+            setInnerText('fut-active-portfolio-name', activePortfolio.name || activeFuturesPortfolioKey);
+            const lev = activePortfolio.leverage || 1.5;
+            setInnerText('fut-active-leverage', `${lev}x Nocional ($500.00 / Trade)`);
+            const marginUSD = (500.0 / lev).toFixed(2);
+            setInnerText('fut-active-margin', `$${marginUSD} USD`);
+
+            const cap = activePortfolio.capital_current !== undefined ? activePortfolio.capital_current : 3000.0;
+            setInnerText('fut-capital', `$${cap.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+
+            const metrics = activePortfolio.metrics || {};
+            const totRet = metrics.total_return_pct !== undefined ? metrics.total_return_pct : 0.0;
+            setInnerText('fut-return', `${totRet >= 0 ? '+' : ''}${totRet.toFixed(2)}% Retorno`);
+            setInnerText('fut-pf', `${(metrics.profit_factor || 1.0).toFixed(2)}x`);
+            setInnerText('fut-winrate', `${(metrics.win_rate_pct || 0.0).toFixed(1)}%`);
+            setInnerText('fut-wins-losses', `${metrics.wins || 0} Vitórias / ${metrics.losses || 0} Perdas`);
+            setInnerText('fut-total-trades', `${metrics.total_trades || 0}`);
+
+            const openPos = activePortfolio.open_positions || [];
+            const liqCount = metrics.liquidations_count || 0;
+            setInnerText('fut-open-positions', `${openPos.length} Aberta(s) | ${liqCount} Liq (${liqCount === 0 ? 'Risco Nulo' : 'Alerta'})`);
+
+            const tbody = document.getElementById('fut-trades-table-body');
+            const closed = activePortfolio.closed_trades || [];
+
+            if (closed.length === 0 && openPos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="padding: 16px; text-align: center; color: var(--text-muted);">Aguardando novos candles diários para geração de sinais prospectivos em futuros...</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            openPos.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+                tr.style.background = 'rgba(139, 92, 246, 0.08)';
+                const liqPrice = p.liquidation_price_futures ? `$${p.liquidation_price_futures.toLocaleString()}` : 'N/A';
+                tr.innerHTML = `
+                    <td style="padding: 10px 14px; font-weight: 700; color: var(--accent-purple);">EM ABERTO</td>
+                    <td style="padding: 10px 14px; font-weight: 600; color: #fff;">${p.symbol} (${p.leverage}x)</td>
+                    <td style="padding: 10px 14px;">${p.entry_date}</td>
+                    <td style="padding: 10px 14px; color: var(--accent-purple); font-weight: 700;">Dia ${p.days_in_trade} em andamento</td>
+                    <td style="padding: 10px 14px;">$${p.entry_price_futures ? p.entry_price_futures.toLocaleString() : p.entry_price.toLocaleString()}</td>
+                    <td style="padding: 10px 14px; color: #ef4444;">Liq: ${liqPrice}</td>
+                    <td style="padding: 10px 14px;">${p.early_prune_pending ? '⚡ PENDENTE (Dia 4 Open)' : 'NÃO'}</td>
+                    <td style="padding: 10px 14px;">Acompanhando MFE...</td>
+                    <td style="padding: 10px 14px; text-align: right; font-weight: 700; color: var(--accent-purple);">EM ANDAMENTO</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            closed.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+                const color = (t.pnl_usd || 0) >= 0 ? '#10b981' : '#ef4444';
+                const pruneLabel = t.early_prune_triggered ? `<span style="color: #f59e0b; font-weight: 700;">SIM (Saída D4 Open)</span>` : 'NÃO';
+                const pnlUSD = t.pnl_usd !== undefined ? t.pnl_usd : 0.0;
+                const pnlPct = t.pnl_pct !== undefined ? t.pnl_pct : 0.0;
+
+                tr.innerHTML = `
+                    <td style="padding: 10px 14px; font-weight: 700;">#${t.futures_trade_id || t.trade_id}</td>
+                    <td style="padding: 10px 14px; font-weight: 600; color: #fff;">${t.symbol} (${t.leverage}x)</td>
+                    <td style="padding: 10px 14px;">${t.entry_date}</td>
+                    <td style="padding: 10px 14px;">${t.exit_date}</td>
+                    <td style="padding: 10px 14px;">$${(t.entry_price_futures || t.entry_price || 0).toLocaleString()}</td>
+                    <td style="padding: 10px 14px;">$${(t.exit_price_futures || t.exit_price || 0).toLocaleString()}</td>
+                    <td style="padding: 10px 14px;">${pruneLabel}</td>
+                    <td style="padding: 10px 14px;">${t.exit_reason}</td>
+                    <td style="padding: 10px 14px; text-align: right; font-weight: 700; color: ${color};">${pnlUSD >= 0 ? '+' : ''}$${pnlUSD.toFixed(2)} (${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%)</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         // Alterna Estado do Robô
@@ -1086,6 +1283,7 @@
             fetchLogs();
             fetchPaperTrades();
             fetchForwardOOS();
+            fetchForwardOOSFutures();
             fetchTrades();
         }, 5000);
 
@@ -1095,6 +1293,7 @@
         fetchChart();
         fetchPaperTrades();
         fetchForwardOOS();
+        fetchForwardOOSFutures();
         fetchTrades();
     </script>
 </body>

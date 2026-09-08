@@ -9,12 +9,12 @@ import numpy as np
 import os
 import sys
 
-from src.config import INITIAL_CAPITAL, SYMBOL, TIMEFRAME, DAYS_BACK
-from src.data_loader import fetch_historical_data
-from src.strategy import generate_signals
-from src.backtester import Backtester
-from src.optimizer import run_grid_search
-from src.portfolio_backtester import PortfolioBacktester
+from src.core.config import INITIAL_CAPITAL, SYMBOL, TIMEFRAME, DAYS_BACK
+from src.core.data_loader import fetch_historical_data
+from src.core.strategy import generate_signals
+from src.engines.backtester import Backtester
+from src.engines.optimizer import run_grid_search
+from src.engines.portfolio_backtester import PortfolioBacktester
 
 def print_banner():
     print("=" * 65)
