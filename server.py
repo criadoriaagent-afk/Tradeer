@@ -80,6 +80,7 @@ class APIHandler(BaseHTTPRequestHandler):
                 "status": "healthy",
                 "uptime": "24/7 ACTIVE",
                 "bot": "TRADEER QUANT BYBIT AI",
+                "version": "2.0-futures-4portfolios",
                 "message": "Servidor rodando em nuvem com 100% de integridade."
             })
             return
