@@ -62,7 +62,7 @@ class APIHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
 
     def do_GET(self):
-        req_path = self.path.split('?')[0].rstrip('/')
+        req_path = self.path.split('?')[0].rstrip('/').lower()
 
         if req_path in ['', '/dashboard', '/index.html']:
             dashboard_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dashboard', 'index.html')
@@ -192,19 +192,22 @@ class APIHandler(BaseHTTPRequestHandler):
             from src.forward_oos_cloud_engine import forward_oos_cloud_engine
             self._respond_json(forward_oos_cloud_engine.get_full_state())
 
-        elif req_path == '/api/forward-oos-futures':
-            from src.forward_oos_futures_cloud_engine import forward_oos_futures_cloud_engine
-            self._respond_json(forward_oos_futures_cloud_engine.get_full_state())
+        elif req_path in ['/api/forward-oos-futures', '/forward-oos-futures']:
+            try:
+                from src.forward_oos_futures_cloud_engine import forward_oos_futures_cloud_engine
+                self._respond_json(forward_oos_futures_cloud_engine.get_full_state())
+            except Exception as e:
+                self._respond_json({"error": f"Erro no motor Futures OOS: {e}"}, status=500)
 
-        elif self.path == '/api/trades':
+        elif req_path == '/api/trades':
             audit = get_audited_trade_history(symbol="BTC-USD", days=730)
             self._respond_json(audit.get('trades', []))
             
-        elif self.path == '/api/chart':
+        elif req_path == '/api/chart':
             audit = get_audited_trade_history(symbol="BTC-USD", days=730)
             self._respond_json(audit.get('chart_points', []))
             
-        elif self.path == '/api/logs':
+        elif req_path == '/api/logs':
             self._respond_json(notifier.get_recent_logs(20))
             
         else:
