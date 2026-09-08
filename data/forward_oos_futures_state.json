@@ -1,0 +1,164 @@
+{
+  "status": "FORWARD OOS FUTUROS 24/7 ATIVO (4 CARTEIRAS)",
+  "candidate_id": "EARLY_PRUNE_FUTURES_V1",
+  "start_date_oos": "2026-09-08",
+  "start_timestamp_utc": "2026-09-08T00:00:00Z",
+  "last_processed_date_1d": "2026-09-07",
+  "last_heartbeat": "2026-09-08 03:58:13 UTC",
+  "portfolios": {
+    "Portfolio A (Perp 1.0x)": {
+      "name": "Portfolio A (Perp 1.0x)",
+      "leverage": 1.0,
+      "capital_initial": 3000.0,
+      "capital_current": 3000.0,
+      "open_positions": [],
+      "closed_trades": [],
+      "daily_equity_series": [
+        {
+          "date": "2026-09-07",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
+        }
+      ],
+      "metrics": {
+        "total_trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate_pct": 0.0,
+        "profit_factor": 1.0,
+        "total_pnl_usd": 0.0,
+        "total_return_pct": 0.0,
+        "max_drawdown_pct": 0.0,
+        "funding_total_usd": 0.0,
+        "liquidations_count": 0
+      }
+    },
+    "Portfolio B (Perp 1.25x)": {
+      "name": "Portfolio B (Perp 1.25x)",
+      "leverage": 1.25,
+      "capital_initial": 3000.0,
+      "capital_current": 3000.0,
+      "open_positions": [],
+      "closed_trades": [],
+      "daily_equity_series": [
+        {
+          "date": "2026-09-07",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
+        }
+      ],
+      "metrics": {
+        "total_trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate_pct": 0.0,
+        "profit_factor": 1.0,
+        "total_pnl_usd": 0.0,
+        "total_return_pct": 0.0,
+        "max_drawdown_pct": 0.0,
+        "funding_total_usd": 0.0,
+        "liquidations_count": 0
+      }
+    },
+    "Portfolio C (Perp 1.5x)": {
+      "name": "Portfolio C (Perp 1.5x)",
+      "leverage": 1.5,
+      "capital_initial": 3000.0,
+      "capital_current": 3000.0,
+      "open_positions": [],
+      "closed_trades": [],
+      "daily_equity_series": [
+        {
+          "date": "2026-09-07",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
+        }
+      ],
+      "metrics": {
+        "total_trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate_pct": 0.0,
+        "profit_factor": 1.0,
+        "total_pnl_usd": 0.0,
+        "total_return_pct": 0.0,
+        "max_drawdown_pct": 0.0,
+        "funding_total_usd": 0.0,
+        "liquidations_count": 0
+      }
+    },
+    "Portfolio D (Perp 2.0x)": {
+      "name": "Portfolio D (Perp 2.0x)",
+      "leverage": 2.0,
+      "capital_initial": 3000.0,
+      "capital_current": 3000.0,
+      "open_positions": [],
+      "closed_trades": [],
+      "daily_equity_series": [
+        {
+          "date": "2026-09-07",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
+        }
+      ],
+      "metrics": {
+        "total_trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate_pct": 0.0,
+        "profit_factor": 1.0,
+        "total_pnl_usd": 0.0,
+        "total_return_pct": 0.0,
+        "max_drawdown_pct": 0.0,
+        "funding_total_usd": 0.0,
+        "liquidations_count": 0
+      }
+    }
+  },
+  "execution_logs": [
+    {
+      "timestamp": "2026-09-08 03:54:41 UTC",
+      "level": "INFO",
+      "message": "⚡ Forward OOS Futuros 24/7 (4 Carteiras Virtuais 1.0x a 2.0x) iniciado oficialmente no Render."
+    }
+  ],
+  "frozen_params": {
+    "strategy_name": "EARLY_PRUNE_FUTURES_V1",
+    "instrument": "Bybit Linear USDT Perpetual Futures",
+    "portfolios": [
+      {
+        "name": "Portfolio A (Perp 1.0x)",
+        "leverage": 1.0
+      },
+      {
+        "name": "Portfolio B (Perp 1.25x)",
+        "leverage": 1.25
+      },
+      {
+        "name": "Portfolio C (Perp 1.5x)",
+        "leverage": 1.5
+      },
+      {
+        "name": "Portfolio D (Perp 2.0x)",
+        "leverage": 2.0
+      }
+    ],
+    "status_label": "FORWARD OOS FUTUROS 24/7 ATIVO (4 CARTEIRAS)",
+    "mfe_threshold_pct": 1.0,
+    "observation_days": 3,
+    "execution_timing": "Day 4 Open",
+    "margin_per_trade_usd": 333.33,
+    "capital_initial_per_portfolio_usd": 3000.0,
+    "slippage_rate": 0.0002,
+    "stop_loss_atr_mult": 2.0,
+    "donchian_entry_period": 30,
+    "donchian_exit_period": 10,
+    "ema_trend_period": 200,
+    "adx_period": 14,
+    "adx_threshold": 20,
+    "vol_sma_period": 20,
+    "in_sample_end_date": "2026-09-07",
+    "oos_start_date": "2026-09-08",
+    "oos_start_timestamp_utc": "2026-09-08T00:00:00Z"
+  }
+}

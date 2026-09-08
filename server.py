@@ -190,6 +190,10 @@ class APIHandler(BaseHTTPRequestHandler):
             from src.forward_oos_cloud_engine import forward_oos_cloud_engine
             self._respond_json(forward_oos_cloud_engine.get_full_state())
 
+        elif self.path == '/api/forward-oos-futures':
+            from src.forward_oos_futures_cloud_engine import forward_oos_futures_cloud_engine
+            self._respond_json(forward_oos_futures_cloud_engine.get_full_state())
+
         elif self.path == '/api/trades':
             audit = get_audited_trade_history(symbol="BTC-USD", days=730)
             self._respond_json(audit.get('trades', []))
@@ -260,9 +264,13 @@ def run_server(port=None):
     # Inicia o motor de simulação 24/7 em tempo real em segundo plano
     paper_trading_engine.start_background_loop(interval_seconds=30)
     
-    # Inicia o motor de Validação Prospectiva Forward OOS (EARLY_PRUNE_V1 Congelada)
+    # Inicia o motor de Validação Prospectiva Forward OOS (EARLY_PRUNE_V1 Congelada Spot)
     from src.forward_oos_cloud_engine import forward_oos_cloud_engine
     forward_oos_cloud_engine.start_background_loop(interval_seconds=900)
+    
+    # Inicia o motor de Validação Prospectiva Forward OOS Futuros Perpétuos (1.5x)
+    from src.forward_oos_futures_cloud_engine import forward_oos_futures_cloud_engine
+    forward_oos_futures_cloud_engine.start_background_loop(interval_seconds=900)
     
     # Inicia o auto-ping contra hibernação do Render
     start_keep_alive_thread()
