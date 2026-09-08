@@ -1,9 +1,11 @@
 """
 Motor Cloud Engine Idempotente 24/7 do Forward OOS - Futuros Perpétuos (4 Carteiras Virtuais).
 Roda em nuvem no Render com persistência isolada em data/forward_oos_futures_state.json.
-Decisão: 100% Derivada da EARLY_PRUNE_V1 Spot.
-Execução: Espelhada nas 4 carteiras virtuais (Perp 1.0x, 1.25x, 1.5x, 2.0x).
-Idempotência: Rastreabilidade estrita via SPOT_SIGNAL_ID para impedir qualquer duplicação de ordens.
+
+DECISÃO: 100% Derivada da EARLY_PRUNE_V1 Spot OOS (lida diretamente de data/forward_oos_state.json).
+EXECUÇÃO: Espelhada nas 4 carteiras virtuais (Perp 1.0x, 1.25x, 1.5x, 2.0x).
+FUNDING: Taxas reais de Funding da Bybit consultadas via API nos timestamps de 8h (00:00, 08:00, 16:00 UTC).
+IDEMPOTÊNCIA: Rastreabilidade estrita via SPOT_SIGNAL_ID para conter qualquer duplicação.
 """
 import os
 import sys
@@ -11,6 +13,7 @@ import json
 import time
 import datetime
 import threading
+import requests
 import pandas as pd
 import numpy as np
 import yfinance as yf
@@ -24,6 +27,7 @@ if hasattr(sys.stdout, 'reconfigure'):
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
 STATE_FILE = os.path.join(DATA_DIR, 'forward_oos_futures_state.json')
+SPOT_STATE_FILE = os.path.join(DATA_DIR, 'forward_oos_state.json')
 
 BYBIT_RISK_TIERS = {
     "BTC-USD": {"symbol_bybit": "BTCUSDT", "mmr": 0.0050, "mmd": 0.0, "taker_fee": 0.00055},
@@ -65,6 +69,86 @@ def calculate_bybit_long_liquidation_price(entry_price_futures: float, leverage:
     factor = 1.0 - (1.0 / leverage) + mmr + (taker_fee / leverage)
     liq_p = (entry_price_futures * factor) - (mmd / qty if qty > 0 else 0.0)
     return max(0.0, liq_p)
+
+def fetch_bybit_funding_history_real(symbol_bybit: str) -> pd.DataFrame:
+    """
+    Busca o histórico real de Funding Rates da Bybit (8h: 00:00, 08:00, 16:00 UTC).
+    """
+    url = "https://api.bybit.com/v5/market/funding/history"
+    params = {"category": "linear", "symbol": symbol_bybit, "limit": 200}
+    all_records = []
+    
+    try:
+        for _ in range(3):
+            response = requests.get(url, params=params, timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                result = data.get("result", {})
+                list_data = result.get("list", [])
+                if not list_data:
+                    break
+                all_records.extend(list_data)
+                cursor = result.get("nextPageCursor")
+                if not cursor:
+                    break
+                params["cursor"] = cursor
+            else:
+                break
+    except Exception:
+        pass
+        
+    if not all_records:
+        return pd.DataFrame(columns=["date_str", "funding_rate", "timestamp_ms"])
+        
+    df_f = pd.DataFrame(all_records)
+    df_f["funding_rate"] = df_f["fundingRate"].astype(float)
+    df_f["timestamp_ms"] = df_f["fundingRateTimestamp"].astype(int)
+    df_f["datetime_utc"] = pd.to_datetime(df_f["timestamp_ms"], unit="ms", utc=True)
+    df_f["date_str"] = df_f["datetime_utc"].dt.strftime("%Y-%m-%d")
+    df_f["timestamp_str"] = df_f["datetime_utc"].dt.strftime("%Y-%m-%d %H:%M:%S UTC")
+    df_f = df_f.sort_values("timestamp_ms").reset_index(drop=True)
+    return df_f
+
+def calculate_real_funding_for_trade(symbol_bybit: str, entry_dt_str: str, exit_dt_str: str, notional_usd: float) -> dict:
+    """
+    Calcula o custo REAL de Funding sem estimativas pré-fixadas, registrando cada evento de 8h.
+    """
+    df_f = fetch_bybit_funding_history_real(symbol_bybit)
+    if df_f.empty:
+        return {"events_detail": [], "funding_events_count": 0, "funding_paid_usd": 0.0, "funding_received_usd": 0.0, "funding_net_usd": 0.0}
+
+    mask = (df_f["date_str"] >= entry_dt_str) & (df_f["date_str"] <= exit_dt_str)
+    trade_funding = df_f[mask]
+    
+    events_detail = []
+    paid = 0.0
+    received = 0.0
+    
+    for _, row_f in trade_funding.iterrows():
+        rate = row_f["funding_rate"]
+        ts_str = row_f["timestamp_str"]
+        cost_event = notional_usd * rate
+        
+        if cost_event > 0:
+            paid += cost_event
+        else:
+            received += abs(cost_event)
+            
+        events_detail.append({
+            "funding_event_timestamp": ts_str,
+            "funding_rate": rate,
+            "position_notional": notional_usd,
+            "funding_paid_received": round(-cost_event, 2)
+        })
+        
+    net = received - paid
+    return {
+        "events_detail": events_detail,
+        "funding_events_count": len(events_detail),
+        "funding_paid_usd": round(paid, 2),
+        "funding_received_usd": round(received, 2),
+        "funding_net_usd": round(net, 2)
+    }
 
 class ForwardOOSFuturesCloudEngine:
     def __init__(self):
@@ -121,6 +205,7 @@ class ForwardOOSFuturesCloudEngine:
         return {
             "status": "FORWARD OOS FUTUROS 24/7 ATIVO (4 CARTEIRAS)",
             "candidate_id": "EARLY_PRUNE_FUTURES_V1",
+            "signal_source": "100% DERIVADO DA EARLY_PRUNE_V1 SPOT (forward_oos_state.json)",
             "start_date_oos": FROZEN_FUTURES_PARAMS["oos_start_date"],
             "start_timestamp_utc": FROZEN_FUTURES_PARAMS["oos_start_timestamp_utc"],
             "last_processed_date_1d": FROZEN_FUTURES_PARAMS["in_sample_end_date"],
@@ -131,7 +216,7 @@ class ForwardOOSFuturesCloudEngine:
                 {
                     "timestamp": now_utc,
                     "level": "INFO",
-                    "message": "⚡ Forward OOS Futuros 24/7 (4 Carteiras Virtuais 1.0x a 2.0x) iniciado oficialmente no Render."
+                    "message": "⚡ Forward OOS Futuros 24/7 (4 Carteiras Virtuais 1.0x a 2.0x) acoplado diretamente ao Spot OOS."
                 }
             ],
             "frozen_params": FROZEN_FUTURES_PARAMS
@@ -154,47 +239,66 @@ class ForwardOOSFuturesCloudEngine:
         self.state.setdefault("execution_logs", []).insert(0, log_entry)
         self.state["execution_logs"] = self.state["execution_logs"][:100]
 
-    def _fetch_indicator_data(self, symbol: str) -> pd.DataFrame:
+    def _get_spot_signals() -> list:
+        """
+        Lê diretamente os sinais emitidos pelo Spot OOS em data/forward_oos_state.json.
+        """
+        if not os.path.exists(SPOT_STATE_FILE):
+            return []
         try:
-            df = yf.download(symbol, period="365d", interval="1d", progress=False)
+            with open(SPOT_STATE_FILE, 'r', encoding='utf-8') as f:
+                spot_data = json.load(f)
+            
+            signals = []
+            # Sinais de posições abertas no Spot
+            for pos in spot_data.get("open_positions", []):
+                sym = pos["symbol"]
+                date_str = pos["entry_date"]
+                sig_id = f"SPOT_SIG_{sym}_{date_str}"
+                signals.append({
+                    "spot_signal_id": sig_id,
+                    "symbol": sym,
+                    "entry_date": date_str,
+                    "spot_entry_price": pos["entry_price"],
+                    "stop_loss": pos["stop_loss"],
+                    "status": "OPEN",
+                    "spot_pos_data": pos
+                })
+            # Sinais de trades já encerrados no Spot
+            for tr in spot_data.get("closed_trades", []):
+                sym = tr["symbol"]
+                date_str = tr["entry_date"]
+                sig_id = f"SPOT_SIG_{sym}_{date_str}"
+                signals.append({
+                    "spot_signal_id": sig_id,
+                    "symbol": sym,
+                    "entry_date": date_str,
+                    "spot_entry_price": tr["entry_price"],
+                    "exit_date": tr["exit_date"],
+                    "spot_exit_price": tr["exit_price"],
+                    "stop_loss": tr["stop_loss"],
+                    "exit_reason": tr["exit_reason"],
+                    "status": "CLOSED",
+                    "spot_trade_data": tr
+                })
+            return signals
+        except Exception as e:
+            print(f"[ForwardOOS Futures] Erro ao ler sinais do Spot: {e}")
+            return []
+
+    def _fetch_intraday_ohlc(self, symbol: str) -> pd.DataFrame:
+        try:
+            df = yf.download(symbol, period="30d", interval="1d", progress=False)
             if df.empty:
                 return pd.DataFrame()
-            
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
-                
-            df = df.rename(columns={
-                'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Volume': 'volume'
-            }).dropna()
-            
+            df = df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Volume': 'volume'}).dropna()
             df = df.reset_index()
             date_col = 'Date' if 'Date' in df.columns else df.columns[0]
             df['date_str'] = df[date_col].dt.strftime('%Y-%m-%d')
-            
-            # Shift(1) Zero Look-Ahead no Spot
-            df['donchian_high_30'] = df['high'].shift(1).rolling(window=30).max()
-            df['donchian_low_10'] = df['low'].shift(1).rolling(window=10).min()
-            df['ema_200'] = df['close'].shift(1).ewm(span=200, adjust=False).mean()
-            
-            high_low = df['high'] - df['low']
-            high_close = (df['high'] - df['close'].shift(1)).abs()
-            low_close = (df['low'] - df['close'].shift(1)).abs()
-            tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
-            df['atr_14'] = tr.shift(1).rolling(window=14).mean()
-            
-            up_move = df['high'] - df['high'].shift(1)
-            down_move = df['low'].shift(1) - df['low']
-            plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0)
-            minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0)
-            plus_di = 100 * (pd.Series(plus_dm).rolling(14).mean() / df['atr_14'])
-            minus_di = 100 * (pd.Series(minus_dm).rolling(14).mean() / df['atr_14'])
-            dx = 100 * (np.abs(plus_di - minus_di) / (plus_di + minus_di))
-            df['adx_14'] = dx.shift(1).rolling(14).mean()
-            df['vol_sma_20'] = df['volume'].shift(1).rolling(window=20).mean()
-            
             return df
-        except Exception as e:
-            print(f"[ForwardOOS Futures] Erro ao baixar dados de {symbol}: {e}")
+        except Exception:
             return pd.DataFrame()
 
     def process_daily_update(self):
@@ -203,152 +307,168 @@ class ForwardOOSFuturesCloudEngine:
             now_utc_str = now_utc_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
             today_utc = now_utc_dt.strftime("%Y-%m-%d")
             self.state["last_heartbeat"] = now_utc_str
-            
-            btc_df = self._fetch_indicator_data("BTC-USD")
-            if btc_df.empty:
-                self._save_to_disk()
-                return
-
-            # Considerar apenas candles 1D estritamente FECHADOS (datas < data atual UTC)
-            closed_candles_df = btc_df[btc_df['date_str'] < today_utc]
-            if closed_candles_df.empty:
-                self._save_to_disk()
-                return
-
-            latest_closed_date = closed_candles_df['date_str'].iloc[-1]
-            last_processed = self.state.get("last_processed_date_1d", FROZEN_FUTURES_PARAMS["in_sample_end_date"])
-            
-            if latest_closed_date <= last_processed:
-                self._save_to_disk()
-                return
-
-            self.add_log("INFO", f"🔄 Novo candle 1D fechado detectado: {latest_closed_date}. Processando Forward OOS das 4 Carteiras...")
 
             margin_base = FROZEN_FUTURES_PARAMS["margin_per_trade_usd"]
             slippage_rate = FROZEN_FUTURES_PARAMS["slippage_rate"]
             portfolios_list = FROZEN_FUTURES_PARAMS["portfolios"]
             processed_ids = set(self.state.get("processed_spot_signal_ids", []))
 
-            for symbol in self.symbols:
-                df = self._fetch_indicator_data(symbol)
-                if df.empty or len(df) < 30:
+            # 1. OBTER SINAIS REAIS GERADOS PELO SPOT OOS (100% Pura Fonte Única)
+            spot_signals = ForwardOOSFuturesCloudEngine._get_spot_signals()
+
+            # 2. PROCESSAR SINAIS SPOT NAS 4 CARTEIRAS VIRTUAIS DE FUTUROS
+            for sig in spot_signals:
+                sig_id = sig["spot_signal_id"]
+                sym = sig["symbol"]
+                curr_date = sig["entry_date"]
+                
+                # Regra de Corte: Ignorar qualquer sinal anterior ao início oficial do OOS (2026-09-08)
+                if curr_date < FROZEN_FUTURES_PARAMS["oos_start_date"]:
                     continue
 
-                # Filtrar apenas velas estritamente fechadas e posteriores ao último candle processado
-                closed_df = df[df['date_str'] < today_utc].reset_index(drop=True)
-                unprocessed_indices = closed_df[closed_df['date_str'] > last_processed].index.tolist()
-                
-                tier_info = BYBIT_RISK_TIERS[symbol]
+                tier_info = BYBIT_RISK_TIERS[sym]
                 mmr = tier_info["mmr"]
                 mmd = tier_info["mmd"]
                 taker_fee_rate = tier_info["taker_fee"]
 
-                for idx in unprocessed_indices:
-                    row = closed_df.iloc[idx]
-                    prev = closed_df.iloc[idx-1]
-                    curr_date = row['date_str']
+                for p_config in portfolios_list:
+                    pname = p_config["name"]
+                    lev = p_config["leverage"]
+                    port_state = self.state["portfolios"][pname]
+                    notional_usd = margin_base * lev
+
+                    # Checar duplicação (Idempotência)
+                    already_processed = any(t.get("spot_signal_id") == sig_id for t in port_state["closed_trades"]) or any(p.get("spot_signal_id") == sig_id for p in port_state["open_positions"])
                     
-                    # Ignorar velas anteriores ao início oficial do OOS (2026-09-08)
-                    if curr_date < FROZEN_FUTURES_PARAMS["oos_start_date"]:
-                        continue
+                    if not already_processed and sig["status"] in ["OPEN", "CLOSED"]:
+                        # Nova posição espelhada diretamente do Sinal Spot
+                        spot_entry_ref = sig["spot_entry_price"]
+                        futures_entry_price = spot_entry_ref * (1.0 + slippage_rate)
+                        qty = notional_usd / futures_entry_price
+                        spot_sl_price = sig["stop_loss"]
 
-                    # 1. VERIFICAR SE O SINAL SPOT OOS DISPAROU NESTE CANDLE FECHADO
-                    c_trend = prev['close'] > prev['ema_200']
-                    c_donchian = prev['close'] >= prev['donchian_high_30']
-                    c_adx = prev['adx_14'] >= FROZEN_FUTURES_PARAMS["adx_threshold"]
-                    c_vol = prev['volume'] >= prev['vol_sma_20']
-                    spot_signal_triggered = c_trend and c_donchian and c_adx and c_vol
-                    
-                    spot_signal_id = f"SPOT_SIG_{symbol}_{curr_date}"
+                        liq_price = calculate_bybit_long_liquidation_price(
+                            entry_price_futures=futures_entry_price,
+                            leverage=lev,
+                            mmr=mmr,
+                            mmd=mmd,
+                            taker_fee=taker_fee_rate,
+                            qty=qty
+                        )
+                        entry_fee = notional_usd * taker_fee_rate
+                        futures_trade_id = f"FUT_{pname}_{sig_id}"
 
-                    for p_config in portfolios_list:
-                        pname = p_config["name"]
-                        lev = p_config["leverage"]
-                        port_state = self.state["portfolios"][pname]
-                        notional_usd = margin_base * lev
-                        
-                        # A) Atualizar posições abertas nesta carteira
-                        open_pos_list = [p for p in port_state["open_positions"] if p["symbol"] == symbol]
-                        
-                        for pos in open_pos_list:
-                            pos["days_in_trade"] += 1
-                            days = pos["days_in_trade"]
-                            entry_p = pos["futures_entry_price"]
-                            sl_p = pos["spot_sl_trigger_price"]
-                            liq_p = pos["liquidation_price"]
+                        new_pos = {
+                            "id": futures_trade_id,
+                            "futures_trade_id": futures_trade_id,
+                            "spot_signal_id": sig_id,
+                            "symbol": sym,
+                            "leverage": lev,
+                            "entry_date": curr_date,
+                            "spot_entry_reference": spot_entry_ref,
+                            "futures_entry_price": round(futures_entry_price, 2),
+                            "spot_sl_trigger_price": round(spot_sl_price, 2),
+                            "liquidation_price": round(liq_price, 2),
+                            "margin_usd": margin_base,
+                            "notional_usd": notional_usd,
+                            "contracts_qty": qty,
+                            "entry_fee_usd": round(entry_fee, 2),
+                            "days_in_trade": 1,
+                            "mfe_d1_pct": 0.0,
+                            "mfe_d2_pct": 0.0,
+                            "mfe_d3_pct": 0.0,
+                            "mfe_max_pct": 0.0,
+                            "intraday_resolution_note": "Acompanhamento prospectivo via high/low do candle diário com fórmulas oficiais Bybit.",
+                            "early_prune_pending": False
+                        }
 
-                            curr_high_pnl = ((row['high'] - pos["spot_entry_reference"]) / pos["spot_entry_reference"]) * 100.0
-                            if curr_high_pnl > pos["mfe_max_pct"]:
-                                pos["mfe_max_pct"] = round(curr_high_pnl, 2)
+                        port_state["open_positions"].append(new_pos)
+                        processed_ids.add(sig_id)
+                        self.add_log("INFO", f"🚀 [{pname}] VÍNCULO DIRETO SPOT->FUTURES: {sig_id} -> {futures_trade_id} | Ativo: {sym} ({lev}x)")
 
-                            if days == 1:
-                                pos["mfe_d1_pct"] = round(curr_high_pnl, 2)
-                            elif days == 2:
-                                pos["mfe_d2_pct"] = round(max(pos["mfe_d1_pct"], curr_high_pnl), 2)
-                            elif days == 3:
-                                pos["mfe_d3_pct"] = round(max(pos["mfe_d2_pct"], curr_high_pnl), 2)
+            # 3. GERENCIAR E ATUALIZAR POSIÇÕES FUTURAS ABERTAS COM DADOS DE MERCADO E FUNDING REAL
+            for symbol in self.symbols:
+                df_market = self._fetch_intraday_ohlc(symbol)
+                if df_market.empty:
+                    continue
 
-                            hit_futures_liq = (lev > 1.0) and (row['low'] <= liq_p) and (liq_p > 0)
-                            hit_spot_sl = row['low'] <= sl_p
-                            hit_spot_donchian = row['close'] < prev['donchian_low_10']
-                            is_day4_prune = (days == 4) and pos.get("early_prune_pending", False)
+                for p_config in portfolios_list:
+                    pname = p_config["name"]
+                    lev = p_config["leverage"]
+                    port_state = self.state["portfolios"][pname]
+                    notional_usd = margin_base * lev
+                    tier_info = BYBIT_RISK_TIERS[symbol]
+                    taker_fee_rate = tier_info["taker_fee"]
+                    sym_bybit = tier_info["symbol_bybit"]
 
-                            if hit_futures_liq or hit_spot_sl or hit_spot_donchian or is_day4_prune:
+                    open_pos_list = [p for p in port_state["open_positions"] if p["symbol"] == symbol]
+
+                    for pos in open_pos_list:
+                        # Verificar se o Spot OOS já encerrou este trade
+                        corresponding_spot = [s for s in spot_signals if s["spot_signal_id"] == pos["spot_signal_id"]]
+                        spot_is_closed = len(corresponding_spot) > 0 and corresponding_spot[0]["status"] == "CLOSED"
+
+                        curr_market_rows = df_market[df_market["date_str"] >= pos["entry_date"]]
+                        if not curr_market_rows.empty:
+                            last_row = curr_market_rows.iloc[-1]
+                            curr_date_str = last_row["date_str"]
+
+                            # Teste de Liquidação Futura
+                            hit_futures_liq = (lev > 1.0) and (last_row['low'] <= pos["liquidation_price"]) and (pos["liquidation_price"] > 0)
+                            
+                            if hit_futures_liq or spot_is_closed:
                                 if hit_futures_liq:
-                                    futures_raw_exit = liq_p
-                                    exit_reason = "LIQUIDATED (Perda de Margem)"
+                                    futures_raw_exit = pos["liquidation_price"]
+                                    exit_reason = "LIQUIDATED (Perda de Margem - Bybit)"
                                     is_liquidated = True
-                                elif hit_spot_sl:
-                                    futures_raw_exit = sl_p
-                                    exit_reason = "Stop Loss (2.0x ATR)"
-                                    is_liquidated = False
-                                elif is_day4_prune:
-                                    futures_raw_exit = row['open']
-                                    exit_reason = "EARLY_PRUNE_V1 (Day 4 Open)"
-                                    is_liquidated = False
                                 else:
-                                    futures_raw_exit = row['close']
-                                    exit_reason = "Donchian Exit (10d Low)"
+                                    spot_tr = corresponding_spot[0]
+                                    futures_raw_exit = spot_tr["spot_exit_price"]
+                                    exit_reason = spot_tr["exit_reason"]
                                     is_liquidated = False
 
                                 futures_exit_price = futures_raw_exit * (1.0 - slippage_rate)
                                 exit_fee = (pos["contracts_qty"] * futures_exit_price) * taker_fee_rate
                                 tot_fees = pos["entry_fee_usd"] + exit_fee
-                                est_funding_usd = notional_usd * (0.0001 * days)
+
+                                # BUSCA DE FUNDING RATES REAIS DA BYBIT NOS TIMESTAMPS UTC
+                                real_funding_info = calculate_real_funding_for_trade(
+                                    symbol_bybit=sym_bybit,
+                                    entry_dt_str=pos["entry_date"],
+                                    exit_dt_str=curr_date_str,
+                                    notional_usd=notional_usd
+                                )
+                                funding_net = real_funding_info["funding_net_usd"]
 
                                 if is_liquidated:
                                     pnl_usd = -margin_base
                                     net_pct = -100.0
                                 else:
-                                    price_change_pct = ((futures_exit_price - entry_p) / entry_p)
+                                    price_change_pct = ((futures_exit_price - pos["futures_entry_price"]) / pos["futures_entry_price"])
                                     gross_pnl = price_change_pct * notional_usd
-                                    pnl_usd = gross_pnl - tot_fees - est_funding_usd
+                                    pnl_usd = gross_pnl - tot_fees + funding_net
                                     net_pct = (pnl_usd / margin_base) * 100.0
 
-                                futures_trade_id = f"FUT_TRADE_{pname}_{spot_signal_id}"
-
                                 closed_trade = {
-                                    "futures_trade_id": futures_trade_id,
+                                    "futures_trade_id": pos["futures_trade_id"],
                                     "spot_signal_id": pos["spot_signal_id"],
                                     "symbol": symbol,
                                     "leverage": lev,
                                     "entry_date": pos["entry_date"],
-                                    "exit_date": curr_date,
+                                    "exit_date": curr_date_str,
                                     "spot_entry_reference": pos["spot_entry_reference"],
-                                    "futures_entry_price": entry_p,
+                                    "futures_entry_price": pos["futures_entry_price"],
                                     "futures_exit_price": round(futures_exit_price, 2),
-                                    "stop_loss": sl_p,
-                                    "liquidation_price": liq_p,
+                                    "stop_loss": pos["spot_sl_trigger_price"],
+                                    "liquidation_price": pos["liquidation_price"],
                                     "is_liquidated": is_liquidated,
-                                    "days_in_trade": days,
+                                    "days_in_trade": len(curr_market_rows),
                                     "margin_usd": margin_base,
                                     "notional_usd": notional_usd,
-                                    "mfe_d1_pct": pos["mfe_d1_pct"],
-                                    "mfe_d2_pct": pos["mfe_d2_pct"],
-                                    "mfe_d3_pct": pos["mfe_d3_pct"],
                                     "exit_reason": exit_reason,
                                     "fees_usd": round(tot_fees, 2),
-                                    "funding_usd": round(-est_funding_usd, 2),
+                                    "real_funding_detail": real_funding_info,
+                                    "funding_net_usd": round(funding_net, 2),
                                     "net_pnl_usd": round(pnl_usd, 2),
                                     "net_pnl_pct": round(net_pct, 2)
                                 }
@@ -356,68 +476,16 @@ class ForwardOOSFuturesCloudEngine:
                                 port_state["closed_trades"].insert(0, closed_trade)
                                 port_state["open_positions"] = [p for p in port_state["open_positions"] if p["id"] != pos["id"]]
                                 port_state["capital_current"] = round(port_state["capital_current"] + pnl_usd, 2)
-                                self.add_log("INFO", f"⚡ [{pname}] Trade Encerrado em {symbol} ({futures_trade_id}): {exit_reason} | PnL: {net_pct:+.2f}% (${pnl_usd:+.2f})")
-
-                            elif days == 3 and pos["mfe_d3_pct"] < FROZEN_FUTURES_PARAMS["mfe_threshold_pct"]:
-                                pos["early_prune_pending"] = True
-
-                        # B) Checar novas entradas com Idempotência Estrita por SPOT_SIGNAL_ID
-                        has_open = any(p["symbol"] == symbol for p in port_state["open_positions"])
-                        signal_already_processed_for_port = any(t.get("spot_signal_id") == spot_signal_id for t in port_state["closed_trades"]) or any(p.get("spot_signal_id") == spot_signal_id for p in port_state["open_positions"])
-
-                        if not has_open and spot_signal_triggered and not signal_already_processed_for_port:
-                            spot_entry_ref = row['open']
-                            futures_entry_price = spot_entry_ref * (1.0 + slippage_rate)
-                            qty = notional_usd / futures_entry_price
-                            atr_spot = prev['atr_14']
-                            spot_sl_price = spot_entry_ref - (FROZEN_FUTURES_PARAMS["stop_loss_atr_mult"] * atr_spot)
-
-                            liq_price = calculate_bybit_long_liquidation_price(
-                                entry_price_futures=futures_entry_price,
-                                leverage=lev,
-                                mmr=mmr,
-                                mmd=mmd,
-                                taker_fee=taker_fee_rate,
-                                qty=qty
-                            )
-                            entry_fee = notional_usd * taker_fee_rate
-                            futures_trade_id = f"FUT_POS_{pname}_{spot_signal_id}"
-
-                            new_pos = {
-                                "id": futures_trade_id,
-                                "futures_trade_id": futures_trade_id,
-                                "spot_signal_id": spot_signal_id,
-                                "symbol": symbol,
-                                "leverage": lev,
-                                "entry_date": curr_date,
-                                "spot_entry_reference": spot_entry_ref,
-                                "futures_entry_price": round(futures_entry_price, 2),
-                                "spot_sl_trigger_price": round(spot_sl_price, 2),
-                                "liquidation_price": round(liq_price, 2),
-                                "margin_usd": margin_base,
-                                "notional_usd": notional_usd,
-                                "contracts_qty": qty,
-                                "entry_fee_usd": round(entry_fee, 2),
-                                "days_in_trade": 1,
-                                "mfe_d1_pct": round(((row['high'] - spot_entry_ref) / spot_entry_ref) * 100.0, 2),
-                                "mfe_d2_pct": 0.0,
-                                "mfe_d3_pct": 0.0,
-                                "mfe_max_pct": round(((row['high'] - spot_entry_ref) / spot_entry_ref) * 100.0, 2),
-                                "early_prune_pending": False
-                            }
-
-                            port_state["open_positions"].append(new_pos)
-                            processed_ids.add(spot_signal_id)
-                            self.add_log("INFO", f"🚀 [{pname}] VÍNCULO SPOT->FUTURES: {spot_signal_id} -> {futures_trade_id} | Ativo: {symbol} ({lev}x) Entry: ${futures_entry_price:,.2f}")
+                                self.add_log("INFO", f"⚡ [{pname}] Trade Encerrado em {symbol} ({pos['futures_trade_id']}): {exit_reason} | PnL: {net_pct:+.2f}% (${pnl_usd:+.2f}) | Funding Real: ${funding_net:+.2f}")
 
             self.state["processed_spot_signal_ids"] = sorted(list(processed_ids))
             
             # Atualizar métricas e série diária para cada carteira
             for p_config in portfolios_list:
                 pname = p_config["name"]
-                self._update_portfolio_metrics(pname, latest_closed_date)
+                self._update_portfolio_metrics(pname, today_utc)
 
-            self.state["last_processed_date_1d"] = latest_closed_date
+            self.state["last_processed_date_1d"] = today_utc
             self._save_to_disk()
 
     def _update_portfolio_metrics(self, pname: str, latest_date: str):
@@ -448,7 +516,7 @@ class ForwardOOSFuturesCloudEngine:
             if dd > max_dd:
                 max_dd = dd
 
-        tot_funding = sum(t.get("funding_usd", 0.0) for t in closed)
+        tot_funding = sum(t.get("funding_net_usd", 0.0) for t in closed)
         liqs_cnt = sum(1 for t in closed if t.get("is_liquidated", False))
 
         port["capital_current"] = tot_equity
@@ -501,4 +569,4 @@ forward_oos_futures_cloud_engine = ForwardOOSFuturesCloudEngine()
 if __name__ == '__main__':
     engine = ForwardOOSFuturesCloudEngine()
     engine.process_daily_update()
-    print("Estado do Forward OOS Futuros:", json.dumps(engine.get_full_state(), indent=2))
+    print("Estado das 4 Carteiras de Futuros (Coupled to Spot):", json.dumps(engine.get_full_state(), indent=2))

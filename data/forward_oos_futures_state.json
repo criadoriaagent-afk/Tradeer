@@ -3,8 +3,8 @@
   "candidate_id": "EARLY_PRUNE_FUTURES_V1",
   "start_date_oos": "2026-09-08",
   "start_timestamp_utc": "2026-09-08T00:00:00Z",
-  "last_processed_date_1d": "2026-09-07",
-  "last_heartbeat": "2026-09-08 03:58:13 UTC",
+  "last_processed_date_1d": "2026-09-08",
+  "last_heartbeat": "2026-09-08 04:05:15 UTC",
   "portfolios": {
     "Portfolio A (Perp 1.0x)": {
       "name": "Portfolio A (Perp 1.0x)",
@@ -18,6 +18,11 @@
           "date": "2026-09-07",
           "equity_usd": 3000.0,
           "pnl_pct": 0.0
+        },
+        {
+          "date": "2026-09-08",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
         }
       ],
       "metrics": {
@@ -26,10 +31,10 @@
         "losses": 0,
         "win_rate_pct": 0.0,
         "profit_factor": 1.0,
-        "total_pnl_usd": 0.0,
+        "total_pnl_usd": 0,
         "total_return_pct": 0.0,
         "max_drawdown_pct": 0.0,
-        "funding_total_usd": 0.0,
+        "funding_total_usd": 0,
         "liquidations_count": 0
       }
     },
@@ -45,6 +50,11 @@
           "date": "2026-09-07",
           "equity_usd": 3000.0,
           "pnl_pct": 0.0
+        },
+        {
+          "date": "2026-09-08",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
         }
       ],
       "metrics": {
@@ -53,10 +63,10 @@
         "losses": 0,
         "win_rate_pct": 0.0,
         "profit_factor": 1.0,
-        "total_pnl_usd": 0.0,
+        "total_pnl_usd": 0,
         "total_return_pct": 0.0,
         "max_drawdown_pct": 0.0,
-        "funding_total_usd": 0.0,
+        "funding_total_usd": 0,
         "liquidations_count": 0
       }
     },
@@ -72,6 +82,11 @@
           "date": "2026-09-07",
           "equity_usd": 3000.0,
           "pnl_pct": 0.0
+        },
+        {
+          "date": "2026-09-08",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
         }
       ],
       "metrics": {
@@ -80,10 +95,10 @@
         "losses": 0,
         "win_rate_pct": 0.0,
         "profit_factor": 1.0,
-        "total_pnl_usd": 0.0,
+        "total_pnl_usd": 0,
         "total_return_pct": 0.0,
         "max_drawdown_pct": 0.0,
-        "funding_total_usd": 0.0,
+        "funding_total_usd": 0,
         "liquidations_count": 0
       }
     },
@@ -99,6 +114,11 @@
           "date": "2026-09-07",
           "equity_usd": 3000.0,
           "pnl_pct": 0.0
+        },
+        {
+          "date": "2026-09-08",
+          "equity_usd": 3000.0,
+          "pnl_pct": 0.0
         }
       ],
       "metrics": {
@@ -107,10 +127,10 @@
         "losses": 0,
         "win_rate_pct": 0.0,
         "profit_factor": 1.0,
-        "total_pnl_usd": 0.0,
+        "total_pnl_usd": 0,
         "total_return_pct": 0.0,
         "max_drawdown_pct": 0.0,
-        "funding_total_usd": 0.0,
+        "funding_total_usd": 0,
         "liquidations_count": 0
       }
     }
@@ -160,5 +180,6 @@
     "in_sample_end_date": "2026-09-07",
     "oos_start_date": "2026-09-08",
     "oos_start_timestamp_utc": "2026-09-08T00:00:00Z"
-  }
+  },
+  "processed_spot_signal_ids": []
 }
