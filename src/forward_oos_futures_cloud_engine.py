@@ -70,6 +70,87 @@ def calculate_bybit_long_liquidation_price(entry_price_futures: float, leverage:
     liq_p = (entry_price_futures * factor) - (mmd / qty if qty > 0 else 0.0)
     return max(0.0, liq_p)
 
+def fetch_bybit_futures_klines(symbol_bybit: str, interval: str = "15", limit: int = 1000) -> pd.DataFrame:
+    """
+    Busca klines intraday reais do mercado Futuros Perpétuos da Bybit (Category: linear).
+    Intervalos aceitos: "1", "5", "15", "60", "D".
+    """
+    url = "https://api.bybit.com/v5/market/kline"
+    params = {"category": "linear", "symbol": symbol_bybit, "interval": interval, "limit": limit}
+    try:
+        res = requests.get(url, params=params, timeout=6)
+        if res.status_code == 200:
+            data = res.json()
+            kline_list = data.get("result", {}).get("list", [])
+            if not kline_list:
+                return pd.DataFrame()
+            
+            records = []
+            for item in kline_list:
+                ts_ms = int(item[0])
+                dt_utc = pd.to_datetime(ts_ms, unit="ms", utc=True)
+                records.append({
+                    "timestamp_ms": ts_ms,
+                    "datetime_utc": dt_utc,
+                    "date_str": dt_utc.strftime("%Y-%m-%d"),
+                    "timestamp_str": dt_utc.strftime("%Y-%m-%d %H:%M:%S UTC"),
+                    "open": float(item[1]),
+                    "high": float(item[2]),
+                    "low": float(item[3]),
+                    "close": float(item[4]),
+                    "volume": float(item[5])
+                })
+            df = pd.DataFrame(records)
+            df = df.sort_values("timestamp_ms").reset_index(drop=True)
+            return df
+    except Exception as e:
+        print(f"[ForwardOOS Futures] Erro ao buscar klines Bybit de {symbol_bybit}: {e}")
+    return pd.DataFrame()
+
+def get_futures_price_at_timestamp(symbol_bybit: str, target_time) -> tuple:
+    """
+    Retorna (futures_raw_price, actual_timestamp_ms, actual_timestamp_str) do Contrato Perpétuo da Bybit
+    no momento exato ou candle mais próximo do timestamp fornecido.
+    """
+    if isinstance(target_time, str):
+        if len(target_time) == 10: # YYYY-MM-DD
+            target_dt = pd.to_datetime(target_time + " 00:00:00", utc=True)
+        else:
+            target_dt = pd.to_datetime(target_time, utc=True)
+        target_ms = int(target_dt.timestamp() * 1000)
+    elif isinstance(target_time, (int, float)):
+        target_ms = int(target_time)
+        target_dt = pd.to_datetime(target_ms, unit="ms", utc=True)
+    elif isinstance(target_time, datetime.datetime):
+        target_dt = target_time if target_time.tzinfo else target_time.replace(tzinfo=datetime.timezone.utc)
+        target_ms = int(target_dt.timestamp() * 1000)
+    else:
+        now_dt = datetime.datetime.now(datetime.timezone.utc)
+        target_ms = int(now_dt.timestamp() * 1000)
+        target_dt = now_dt
+
+    df_k = fetch_bybit_futures_klines(symbol_bybit, interval="15", limit=200)
+    if df_k.empty:
+        # Tentar ticker ao vivo
+        try:
+            res = requests.get(f"https://api.bybit.com/v5/market/tickers?category=linear&symbol={symbol_bybit}", timeout=5)
+            if res.status_code == 200:
+                result = res.json().get("result", {}).get("list", [])
+                if result:
+                    last_price = float(result[0]["lastPrice"])
+                    return (last_price, target_ms, target_dt.strftime("%Y-%m-%d %H:%M:%S UTC"))
+        except Exception:
+            pass
+        return (0.0, target_ms, target_dt.strftime("%Y-%m-%d %H:%M:%S UTC"))
+
+    # Localizar o candle mais próximo
+    df_k["diff_ms"] = (df_k["timestamp_ms"] - target_ms).abs()
+    best_row = df_k.sort_values("diff_ms").iloc[0]
+    raw_price = best_row["open"]
+    actual_ms = int(best_row["timestamp_ms"])
+    actual_str = best_row["timestamp_str"]
+    return (raw_price, actual_ms, actual_str)
+
 def fetch_bybit_funding_history_real(symbol_bybit: str) -> pd.DataFrame:
     """
     Busca o histórico real de Funding Rates da Bybit (8h: 00:00, 08:00, 16:00 UTC).
@@ -109,15 +190,16 @@ def fetch_bybit_funding_history_real(symbol_bybit: str) -> pd.DataFrame:
     df_f = df_f.sort_values("timestamp_ms").reset_index(drop=True)
     return df_f
 
-def calculate_real_funding_for_trade(symbol_bybit: str, entry_dt_str: str, exit_dt_str: str, notional_usd: float) -> dict:
+def calculate_real_funding_for_trade(symbol_bybit: str, entry_ts_ms: int, exit_ts_ms: int, notional_usd: float) -> dict:
     """
-    Calcula o custo REAL de Funding sem estimativas pré-fixadas, registrando cada evento de 8h.
+    Calcula o custo REAL de Funding filtrado rigorosamente pelo TIMESTAMP MS da abertura e fechamento da posição.
     """
     df_f = fetch_bybit_funding_history_real(symbol_bybit)
     if df_f.empty:
         return {"events_detail": [], "funding_events_count": 0, "funding_paid_usd": 0.0, "funding_received_usd": 0.0, "funding_net_usd": 0.0}
 
-    mask = (df_f["date_str"] >= entry_dt_str) & (df_f["date_str"] <= exit_dt_str)
+    # Filtragem estrita por TIMESTAMP MS da janela da posição
+    mask = (df_f["timestamp_ms"] >= entry_ts_ms) & (df_f["timestamp_ms"] <= exit_ts_ms)
     trade_funding = df_f[mask]
     
     events_detail = []
@@ -287,19 +369,36 @@ class ForwardOOSFuturesCloudEngine:
             return []
 
     def _fetch_intraday_ohlc(self, symbol: str) -> pd.DataFrame:
+        """
+        Busca candles intraday reais do mercado Futuros Perpétuos da Bybit (15m/60m).
+        """
+        symbol_bybit = BYBIT_RISK_TIERS.get(symbol, {}).get("symbol_bybit", symbol.replace("-USD", "USDT"))
+        df_bybit = fetch_bybit_futures_klines(symbol_bybit, interval="15", limit=1000)
+        if not df_bybit.empty:
+            return df_bybit
+        
+        # Fallback 60m se 15m falhar
+        df_bybit_60 = fetch_bybit_futures_klines(symbol_bybit, interval="60", limit=500)
+        if not df_bybit_60.empty:
+            return df_bybit_60
+
+        # Fallback yfinance intraday
         try:
-            df = yf.download(symbol, period="30d", interval="1d", progress=False)
-            if df.empty:
-                return pd.DataFrame()
-            if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.get_level_values(0)
-            df = df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Volume': 'volume'}).dropna()
-            df = df.reset_index()
-            date_col = 'Date' if 'Date' in df.columns else df.columns[0]
-            df['date_str'] = df[date_col].dt.strftime('%Y-%m-%d')
-            return df
+            df = yf.download(symbol, period="14d", interval="15m", progress=False)
+            if not df.empty:
+                if isinstance(df.columns, pd.MultiIndex):
+                    df.columns = df.columns.get_level_values(0)
+                df = df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Volume': 'volume'}).dropna()
+                df = df.reset_index()
+                date_col = 'Datetime' if 'Datetime' in df.columns else ('Date' if 'Date' in df.columns else df.columns[0])
+                df['datetime_utc'] = pd.to_datetime(df[date_col], utc=True)
+                df['timestamp_ms'] = (df['datetime_utc'].astype('int64') // 10**6).astype(int)
+                df['date_str'] = df['datetime_utc'].dt.strftime('%Y-%m-%d')
+                df['timestamp_str'] = df['datetime_utc'].dt.strftime('%Y-%m-%d %H:%M:%S UTC')
+                return df
         except Exception:
-            return pd.DataFrame()
+            pass
+        return pd.DataFrame()
 
     def process_daily_update(self):
         with self.lock:
@@ -330,6 +429,7 @@ class ForwardOOSFuturesCloudEngine:
                 mmr = tier_info["mmr"]
                 mmd = tier_info["mmd"]
                 taker_fee_rate = tier_info["taker_fee"]
+                sym_bybit = tier_info["symbol_bybit"]
 
                 for p_config in portfolios_list:
                     pname = p_config["name"]
@@ -343,9 +443,15 @@ class ForwardOOSFuturesCloudEngine:
                     if not already_processed and sig["status"] in ["OPEN", "CLOSED"]:
                         # Nova posição espelhada diretamente do Sinal Spot
                         spot_entry_ref = sig["spot_entry_price"]
-                        futures_entry_price = spot_entry_ref * (1.0 + slippage_rate)
-                        qty = notional_usd / futures_entry_price
                         spot_sl_price = sig["stop_loss"]
+
+                        # BUSCAR PREÇO REAL DO CONTRATO FUTURO PERPÉTUO DA BYBIT NO TIMESTAMP DO SINAL
+                        (perp_entry_raw, entry_ts_ms, entry_ts_str) = get_futures_price_at_timestamp(sym_bybit, curr_date)
+                        if perp_entry_raw <= 0:
+                            perp_entry_raw = spot_entry_ref
+
+                        futures_entry_price = round(perp_entry_raw * (1.0 + slippage_rate), 2)
+                        qty = notional_usd / futures_entry_price
 
                         liq_price = calculate_bybit_long_liquidation_price(
                             entry_price_futures=futures_entry_price,
@@ -365,8 +471,11 @@ class ForwardOOSFuturesCloudEngine:
                             "symbol": sym,
                             "leverage": lev,
                             "entry_date": curr_date,
+                            "entry_timestamp_ms": entry_ts_ms,
+                            "entry_timestamp_str": entry_ts_str,
                             "spot_entry_reference": spot_entry_ref,
-                            "futures_entry_price": round(futures_entry_price, 2),
+                            "futures_entry_price_raw": perp_entry_raw,
+                            "futures_entry_price": futures_entry_price,
                             "spot_sl_trigger_price": round(spot_sl_price, 2),
                             "liquidation_price": round(liq_price, 2),
                             "margin_usd": margin_base,
@@ -378,13 +487,13 @@ class ForwardOOSFuturesCloudEngine:
                             "mfe_d2_pct": 0.0,
                             "mfe_d3_pct": 0.0,
                             "mfe_max_pct": 0.0,
-                            "intraday_resolution_note": "Acompanhamento prospectivo via high/low do candle diário com fórmulas oficiais Bybit.",
+                            "intraday_resolution_note": "Monitoramento intraday real (15m/60m) via klines perpétuas Bybit V5.",
                             "early_prune_pending": False
                         }
 
                         port_state["open_positions"].append(new_pos)
                         processed_ids.add(sig_id)
-                        self.add_log("INFO", f"🚀 [{pname}] VÍNCULO DIRETO SPOT->FUTURES: {sig_id} -> {futures_trade_id} | Ativo: {sym} ({lev}x)")
+                        self.add_log("INFO", f"🚀 [{pname}] VÍNCULO DIRETO SPOT->FUTURES: {sig_id} -> {futures_trade_id} | Preço Perp: ${perp_entry_raw:,.2f} | Ativo: {sym} ({lev}x)")
 
             # 3. GERENCIAR E ATUALIZAR POSIÇÕES FUTURAS ABERTAS COM DADOS DE MERCADO E FUNDING REAL
             for symbol in self.symbols:
@@ -408,34 +517,64 @@ class ForwardOOSFuturesCloudEngine:
                         corresponding_spot = [s for s in spot_signals if s["spot_signal_id"] == pos["spot_signal_id"]]
                         spot_is_closed = len(corresponding_spot) > 0 and corresponding_spot[0]["status"] == "CLOSED"
 
-                        curr_market_rows = df_market[df_market["date_str"] >= pos["entry_date"]]
+                        # Candles intraday ocorridos a partir do timestamp de entrada
+                        entry_ts = pos.get("entry_timestamp_ms", 0)
+                        curr_market_rows = df_market[df_market["timestamp_ms"] >= entry_ts]
+                        if curr_market_rows.empty:
+                            curr_market_rows = df_market[df_market["date_str"] >= pos["entry_date"]]
+
                         if not curr_market_rows.empty:
                             last_row = curr_market_rows.iloc[-1]
                             curr_date_str = last_row["date_str"]
+                            latest_ts_ms = int(last_row["timestamp_ms"])
+                            latest_ts_str = last_row["timestamp_str"]
 
-                            # Teste de Liquidação Futura
-                            hit_futures_liq = (lev > 1.0) and (last_row['low'] <= pos["liquidation_price"]) and (pos["liquidation_price"] > 0)
-                            
-                            if hit_futures_liq or spot_is_closed:
+                            # Testar violação de Liquidação ou Stop Loss intraday em qualquer candle
+                            hit_futures_liq = False
+                            hit_stop_loss = False
+                            trigger_candle = None
+
+                            for _, candle in curr_market_rows.iterrows():
+                                if (lev > 1.0) and (candle['low'] <= pos["liquidation_price"]) and (pos["liquidation_price"] > 0):
+                                    hit_futures_liq = True
+                                    trigger_candle = candle
+                                    break
+                                elif (candle['low'] <= pos["spot_sl_trigger_price"]) and (pos["spot_sl_trigger_price"] > 0):
+                                    hit_stop_loss = True
+                                    trigger_candle = candle
+                                    break
+
+                            if hit_futures_liq or hit_stop_loss or spot_is_closed:
                                 if hit_futures_liq:
                                     futures_raw_exit = pos["liquidation_price"]
                                     exit_reason = "LIQUIDATED (Perda de Margem - Bybit)"
                                     is_liquidated = True
+                                    exit_ts_ms = int(trigger_candle["timestamp_ms"]) if trigger_candle is not None else latest_ts_ms
+                                    exit_ts_str = trigger_candle["timestamp_str"] if trigger_candle is not None else latest_ts_str
+                                elif hit_stop_loss:
+                                    futures_raw_exit = pos["spot_sl_trigger_price"]
+                                    exit_reason = "Stop Loss Intraday (2.0x ATR)"
+                                    is_liquidated = False
+                                    exit_ts_ms = int(trigger_candle["timestamp_ms"]) if trigger_candle is not None else latest_ts_ms
+                                    exit_ts_str = trigger_candle["timestamp_str"] if trigger_candle is not None else latest_ts_str
                                 else:
                                     spot_tr = corresponding_spot[0]
-                                    futures_raw_exit = spot_tr["spot_exit_price"]
+                                    spot_exit_dt = spot_tr.get("exit_date", curr_date_str)
+                                    (perp_exit_raw, exit_ts_ms, exit_ts_str) = get_futures_price_at_timestamp(sym_bybit, spot_exit_dt)
+                                    futures_raw_exit = perp_exit_raw if perp_exit_raw > 0 else spot_tr["spot_exit_price"]
                                     exit_reason = spot_tr["exit_reason"]
                                     is_liquidated = False
 
-                                futures_exit_price = futures_raw_exit * (1.0 - slippage_rate)
+                                futures_exit_price = round(futures_raw_exit * (1.0 - slippage_rate), 2)
                                 exit_fee = (pos["contracts_qty"] * futures_exit_price) * taker_fee_rate
                                 tot_fees = pos["entry_fee_usd"] + exit_fee
 
-                                # BUSCA DE FUNDING RATES REAIS DA BYBIT NOS TIMESTAMPS UTC
+                                # BUSCA DE FUNDING RATES REAIS DA BYBIT FILTRADOS PELO TIMESTAMP MS EXATO
+                                entry_ts_ms = pos.get("entry_timestamp_ms", 0)
                                 real_funding_info = calculate_real_funding_for_trade(
                                     symbol_bybit=sym_bybit,
-                                    entry_dt_str=pos["entry_date"],
-                                    exit_dt_str=curr_date_str,
+                                    entry_ts_ms=entry_ts_ms,
+                                    exit_ts_ms=exit_ts_ms,
                                     notional_usd=notional_usd
                                 )
                                 funding_net = real_funding_info["funding_net_usd"]
@@ -456,8 +595,12 @@ class ForwardOOSFuturesCloudEngine:
                                     "leverage": lev,
                                     "entry_date": pos["entry_date"],
                                     "exit_date": curr_date_str,
+                                    "entry_timestamp_str": pos.get("entry_timestamp_str", pos["entry_date"]),
+                                    "exit_timestamp_str": exit_ts_str,
                                     "spot_entry_reference": pos["spot_entry_reference"],
+                                    "futures_entry_price_raw": pos.get("futures_entry_price_raw", pos["futures_entry_price"]),
                                     "futures_entry_price": pos["futures_entry_price"],
+                                    "futures_exit_price_raw": round(futures_raw_exit, 2),
                                     "futures_exit_price": round(futures_exit_price, 2),
                                     "stop_loss": pos["spot_sl_trigger_price"],
                                     "liquidation_price": pos["liquidation_price"],

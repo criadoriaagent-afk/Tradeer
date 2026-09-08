@@ -4,8 +4,8 @@
   "freeze_confirmation": "100% INALTERADA (+1.0% MFE 3d, Day 4 Open exit, 2x ATR SL)",
   "start_date_oos": "2026-09-08",
   "start_timestamp_utc": "2026-09-08T00:00:00Z",
-  "last_processed_date_1d": "2026-09-07",
-  "last_heartbeat": "2026-09-07 23:35:48 UTC",
+  "last_processed_date_1d": "2026-09-08",
+  "last_heartbeat": "2026-09-08 04:14:29 UTC",
   "capital_initial": 3000.0,
   "capital_current": 3000.0,
   "open_positions": [],
@@ -15,9 +15,19 @@
       "date": "2026-09-07",
       "equity_usd": 3000.0,
       "pnl_pct": 0.0
+    },
+    {
+      "date": "2026-09-08",
+      "equity_usd": 3000.0,
+      "pnl_pct": 0.0
     }
   ],
   "execution_logs": [
+    {
+      "timestamp": "2026-09-08 04:14:30 UTC",
+      "level": "INFO",
+      "message": "🔄 Novo candle diário detectado: 2026-09-08. Executando validação prospectiva..."
+    },
     {
       "timestamp": "2026-09-07 23:35:33 UTC",
       "level": "INFO",
@@ -50,10 +60,8 @@
     "losses": 0,
     "win_rate_pct": 0.0,
     "profit_factor": 1.0,
-    "total_pnl_usd": 0.0,
+    "total_pnl_usd": 0,
     "total_return_pct": 0.0,
-    "max_drawdown_pct": 0.0,
-    "losses_saved_usd": 0.0,
-    "profit_sacrificed_usd": 0.0
+    "max_drawdown_pct": 0.0
   }
 }

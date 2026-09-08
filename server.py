@@ -62,7 +62,9 @@ class APIHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
 
     def do_GET(self):
-        if self.path in ['/', '/dashboard', '/index.html']:
+        req_path = self.path.split('?')[0].rstrip('/')
+
+        if req_path in ['', '/dashboard', '/index.html']:
             dashboard_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dashboard', 'index.html')
             if os.path.exists(dashboard_path):
                 self.send_response(200)
@@ -73,7 +75,7 @@ class APIHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f.read())
                 return
 
-        if self.path in ['/healthz', '/ping', '/health']:
+        if req_path in ['/healthz', '/ping', '/health']:
             self._respond_json({
                 "status": "healthy",
                 "uptime": "24/7 ACTIVE",
@@ -82,7 +84,7 @@ class APIHandler(BaseHTTPRequestHandler):
             })
             return
 
-        if self.path == '/api/status':
+        if req_path == '/api/status':
             audit = get_audited_trade_history(symbol="BTC-USD", days=730)
             
             # Cotação e Análise de Mercado ao Vivo
@@ -182,15 +184,15 @@ class APIHandler(BaseHTTPRequestHandler):
             }
             self._respond_json(response_data)
             
-        elif self.path == '/api/paper-trades':
+        elif req_path == '/api/paper-trades':
             from src.paper_trading import get_live_paper_trades
             self._respond_json(get_live_paper_trades())
 
-        elif self.path == '/api/forward-oos':
+        elif req_path == '/api/forward-oos':
             from src.forward_oos_cloud_engine import forward_oos_cloud_engine
             self._respond_json(forward_oos_cloud_engine.get_full_state())
 
-        elif self.path == '/api/forward-oos-futures':
+        elif req_path == '/api/forward-oos-futures':
             from src.forward_oos_futures_cloud_engine import forward_oos_futures_cloud_engine
             self._respond_json(forward_oos_futures_cloud_engine.get_full_state())
 
